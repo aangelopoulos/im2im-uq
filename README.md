@@ -1,2 +1,2 @@
 # microml
-Machine learning for microscopy
+A library for computer vision and microscopy.
