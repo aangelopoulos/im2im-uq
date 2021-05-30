@@ -2,8 +2,8 @@
 A library for computer vision and microscopy.
 
 Todo List:
-- [ ] Make dir structure
-- [ ] Make base environment YML (numpy, torch/torchvision/cuda/etc, pandas, opencv, matplotlib, seaborn, celluloid, tensorboard/weights&biases, jupyter, skimage, scipy, pickle, h5py, imageio, tqdm, pip.
+- [x] Make dir structure
+- [x] Make base environment YML (numpy, torch/torchvision/cuda/etc, pandas, opencv, matplotlib, seaborn, celluloid, tensorboard/weights&biases, jupyter, skimage, scipy, pickle, h5py, imageio, tqdm, pip.
 - [ ] setup main.py with W&B as script router, will have a corresponding main config file for experiment-wide paramters (e.g., file paths). This specifies which experiment to run.
 - [ ] Set up a experiment run script. These scripts, called by main, will grab a dataset and model trunk, split the dataset, modify the model and call train.py. Each has its own config file to specify which trunk and dataset as well as which uncertainty method and any relevant parameters.
 - [ ] Set up a model trunk (e.g., simple U-Net) which will instantiated by an experiment run script
