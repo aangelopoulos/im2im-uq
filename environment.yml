@@ -1,0 +1,30 @@
+name: microcv 
+channels:
+  - anaconda
+  - pytorch
+  - coecms
+  - conda-forge
+dependencies:
+  - pip=20.1.1
+  - python=3.7.7
+  - numpy=1.18
+  - numpy-base=1.18
+  - matplotlib=3.1
+  - matplotlib-base=3.1
+  - scipy=1.4
+  - pytorch=1.4
+  - torchvision
+  - torchaudio
+  - cudatoolkit=10.2 
+  - pandas=1.0.3
+  - pillow=7.1.2
+  - seaborn=0.10.1
+  - tqdm=4.47.0
+  - celluloid
+  - wandb
+  - jupyter
+  - scikit-image
+  - h5py
+  - imageio
+  - pip:
+    - opencv-contrib-python 
