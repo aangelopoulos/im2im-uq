@@ -18,3 +18,20 @@ Todo List:
 - [ ] Now run the full pipeline: make a experiment run script which grabs a model trunk and dataset, adds an uncertainty method to the model via add_uncertainty.py, calls train.py to train it, calls calibrate.py will calibration data to calibrate the model, and finally runs test.py to test the models performance and uncertainty.
 - [ ] Add a visualize.py which has a bunch of methods for various plots and visualizations given a trained model and some data (uncertainty visualization, coverage statistics, etc).
 
+## Installation
+You will need to execute
+```
+conda env create -f environment.yml
+conda activate microcv
+```
+You will also need to define the following environment variables:
+```
+WANDB_API_KEY
+WANDB_USERNAME
+WANDB_USER_EMAIL
+```
+## Running an experiment
+```
+wandb sweep experiments/test/configs-default.yaml
+```
+Then run the wandb agent given.

@@ -1,0 +1,15 @@
+#sample config defaults file
+program: main.py
+method: grid
+metric:
+  goal: minimize
+  name: val_loss
+parameters:
+  sweep_param:
+    values: ['value1','value2']
+  param1:
+    value: 0.1
+  param2:
+    value: "I am a string."
+  group:
+    value: "test"
