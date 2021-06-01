@@ -1,5 +1,5 @@
 #sample config defaults file
-program: main.py
+program: core/scripts/router.py
 method: grid
 metric:
   goal: minimize
