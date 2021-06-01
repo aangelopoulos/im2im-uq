@@ -77,7 +77,7 @@ def train_net(net,
         if (epoch+1) % 10 == 0:
             # validation
             val_loss = eval_net(net, val_loader, device)
-            wandb.log({"iter":global_step, "train_loss":val_loss})
+            wandb.log({"iter":global_step, "val_loss":val_loss})
             #scheduler.step(val_score)
 
         if (epoch+1) % 10 == 0:
