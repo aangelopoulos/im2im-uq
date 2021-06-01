@@ -4,6 +4,7 @@ method: grid
 metric:
   goal: minimize
   name: val_loss
+name: 'test'
 parameters:
   sweep_param:
     values: ['value1','value2']
@@ -13,3 +14,5 @@ parameters:
     value: "I am a string."
   group:
     value: "test"
+  output_dir:
+    value: "experiments/test/outputs/"
