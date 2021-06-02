@@ -1,13 +1,13 @@
+import os,sys,inspect
+sys.path.insert(1, os.path.join(sys.path[0], '../../../'))
 import numpy as np
 import matplotlib.pyplot as plt
 from torch.utils.data import Dataset, DataLoader
 import pdb
-import sys
 import torch
-sys.path.append("..")
-import utils
+import core.datasets.utils as utils
 
-class CareDrosophilaDataset(Dataset):
+class CAREDrosophilaDataset(Dataset):
     # path should be absolute, num instances is an int or 'all', normalize can be None, 'standard', or 'min-max'
     def __init__(self, path, num_instances, normalize=None):
         print('loading dataset from ' + path + '...')
@@ -40,6 +40,6 @@ class CareDrosophilaDataset(Dataset):
 
 if __name__ == "__main__":
   path = '/clusterfs/abc/angelopoulos/care/Isotropic_Drosophila/train_data/data_label.npz'
-  dataset = CareDrosophilaDataset(path, num_instances=20, normalize='min-max')
+  dataset = CAREDrosophilaDataset(path, num_instances=20, normalize='min-max')
   loader = DataLoader(dataset, batch_size=5, shuffle=True)
   pdb.set_trace()

@@ -1,16 +1,16 @@
 """ Full assembly of the parts to form the complete network """
-
+import os,sys,inspect
+sys.path.insert(1, os.path.join(sys.path[0], '../../../'))
 import torch.nn.functional as F
-import pdb
 
-from .unet_parts import *
-
+from core.models.trunks.unet.unet_parts import *
+import torch.nn as nn
 
 class WNet(nn.Module):
-    def __init__(self, n_channels, n_classes, bilinear=True):
+    def __init__(self, n_channels_in, n_channels_out, bilinear=True):
         super(WNet, self).__init__()
-        self.n_channels = n_channels
-        self.n_classes = n_classes
+        self.n_channels_in = n_channels_in
+        self.n_channels_out = n_channels_out
         self.bilinear = bilinear
         factor = 2 if bilinear else 1
 
@@ -32,8 +32,7 @@ class WNet(nn.Module):
         self.up2 = Up(512, 256 // factor, bilinear)
         self.up3 = Up(256, 128 // factor, bilinear)
         self.up4 = Up(128, 64, bilinear)
-        #self.histology = Up_custom(64, 32, bilinear, (8.0 / 3.0))
-        self.outc = OutConv(64, n_classes) # usually make this 64 in channels
+        self.out = OutConv(64, 32)
 
     def forward(self, x):
         p1, p2 = (x[:,0:1,:,:], x[:,1:2,:,:])
@@ -54,6 +53,6 @@ class WNet(nn.Module):
         x = self.up2(x, torch.cat((p1_3, p2_3), dim=1))
         x = self.up3(x, torch.cat((p1_2, p2_2), dim=1))
         x = self.up4(x, torch.cat((p1_1, p2_1), dim=1))
-        #x = self.histology(x)
-        logits = self.outc(x)
-        return logits
+        x = self.out(x)
+
+        return x 
