@@ -16,3 +16,25 @@ parameters:
     value: "test"
   output_dir:
     value: "experiments/test/outputs/"
+  dataset:
+    value: "CIFAR10"
+  num_classes:
+    value: 10
+  data_split_percentages:
+    value: [0.8, 0.1, 0.1]
+  model:
+    value: "ResNet18"
+  device:
+    value: "cuda"
+  epochs:
+    value: 2
+  batch_size:
+    value: 32
+  lr:
+    value: 0.0001
+  checkpoint_dir:
+    value: "experiments/test/checkpoints"
+  checkpoint_every:
+    value: 10
+  validate_every:
+    value: 10 

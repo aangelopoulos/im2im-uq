@@ -12,14 +12,10 @@ from torch import optim
 from tqdm import tqdm
 
 from core.scripts.eval import eval_net
-from core.networks.unet import UNet
-from core.networks.unet import WNet
 
 from torch.utils.data import DataLoader, random_split
-from core.get_dataset import get_pytorch_dataset
 import core.utils as utils
 import pdb
-from datetime import datetime
 import pickle as pkl
 
 def train_net(net,
@@ -29,9 +25,9 @@ def train_net(net,
               epochs,
               batch_size,
               lr,
-              dir_checkpoint,
-              dir_output,
-              save_cp):
+              checkpoint_dir,
+              checkpoint_every,
+              validate_every):
 
     global_step = 0
 
@@ -40,13 +36,9 @@ def train_net(net,
     net.to(device=device)
 
     optimizer = optim.Adam(net.parameters(), lr=lr)
-    #scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min' if net.n_classes > 1 else 'max', patience=2)
-    # if net.n_classes > 1:
-    #     print('performing classification with integer pixel values as classes')
-    #     criterion = nn.CrossEntropyLoss()
-    # else:
-    #     print('performing regression')
-    #     criterion = nn.MSELoss()
+
+    # WandB magic
+    wandb.watch(net, log_freq = 100)
 
     for epoch in range(epochs):
         net.train()
@@ -74,21 +66,23 @@ def train_net(net,
 
         wandb.log({"iter":global_step, "train_loss":epoch_loss/len(train_loader)})
 
-        if (epoch+1) % 10 == 0:
+        if (epoch+1) % validate_every == 0:
             # validation
             val_loss = eval_net(net, val_loader, device)
             wandb.log({"iter":global_step, "val_loss":val_loss})
-            #scheduler.step(val_score)
+            # TODO: Figure out how to log this in a general way.
+            #wandb.log({"examples": [wandb.Image(i) for i in Images]})
+            #scheduler.step(val_loss)
 
-        if (epoch+1) % 10 == 0:
+        if (epoch+1) % checkpoint_every == 0:
             print('saving checkpoint')
-            if save_cp:
+            if checkpoint_dir != None:
                 try:
-                    os.mkdir(dir_checkpoint)
+                    os.mkdir(checkpoint_dir)
                     logging.info('Created checkpoint directory')
                 except OSError:
                     pass
                 torch.save(net,
-                           dir_checkpoint + f'CP_epoch{epoch + 1}.pth')
+                           checkpoint_dir + f'CP_epoch{epoch + 1}.pth')
                 logging.info(f'Checkpoint {epoch + 1} saved !')
         net.eval()
