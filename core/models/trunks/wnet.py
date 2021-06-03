@@ -16,13 +16,13 @@ class WNet(nn.Module):
         factor = 2 if bilinear else 1
 
         # path 1
-        self.p1inc = DoubleConv(n_channels, 32)
+        self.p1inc = DoubleConv(n_channels_in, 32)
         self.p1down1 = Down(32, 64)
         self.p1down2 = Down(64, 128)
         self.p1down3 = Down(128, 256)
         self.p1down4 = Down(256, 512 // factor)
         # path 2
-        self.p2inc = DoubleConv(n_channels, 32)
+        self.p2inc = DoubleConv(n_channels_in, 32)
         self.p2down1 = Down(32, 64)
         self.p2down2 = Down(64, 128)
         self.p2down3 = Down(128, 256)
