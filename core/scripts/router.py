@@ -10,6 +10,12 @@ import yaml
 from core.scripts.train import train_net
 from core.models.add_uncertainty import add_uncertainty
 
+# Models
+from core.models.trunks.unet import UNet
+
+# Datasets
+from core.datasets.CAREDrosophila import CAREDrosophilaDataset
+
 if __name__ == "__main__":
   wandb.init() 
 
@@ -19,16 +25,21 @@ if __name__ == "__main__":
                                      std=[0.229, 0.224, 0.225])
     transform = T.Compose([ T.Resize(256), T.CenterCrop(224), T.ToTensor(), normalize ])
     dataset = torchvision.datasets.CIFAR10('/clusterfs/abc/angelopoulos/CIFAR10', download=True, transform=transform)
+  if wandb.config["dataset"] == "CAREDrosophila":
+    path = '/clusterfs/abc/angelopoulos/care/Isotropic_Drosophila/train_data/data_label.npz'
+    dataset = CAREDrosophilaDataset(path, num_instances=500, normalize='min-max')
   else:
     raise NotImplementedError 
 
   # MODEL LOADING
   if wandb.config["dataset"] == "CIFAR10":
     if wandb.config["model"] == "ResNet18":
-      model = torchvision.models.resnet18(num_classes=wandb.config["num_classes"])
+      trunk = torchvision.models.resnet18(num_classes=wandb.config["num_classes"])
+  if wandb.config["model"] == "UNet":
+      trunk = UNet(1,1)
 
   # ADD LAST LAYER OF MODEL
-  model = add_uncertainty(model, wandb.config)
+  model = add_uncertainty(trunk, wandb.config)
 
   # DATA SPLITTING
   lengths = np.round(len(dataset)*np.array(wandb.config["data_split_percentages"])).astype(int)
@@ -46,4 +57,5 @@ if __name__ == "__main__":
             checkpoint_every=wandb.config["checkpoint_every"],
             validate_every=wandb.config["validate_every"])  
 
-  print("Hello, World!")
+  curr_lr = wandb.config["lr"]
+  print(f"Done with lr={curr_lr}")
