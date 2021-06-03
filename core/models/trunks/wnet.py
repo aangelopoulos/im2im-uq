@@ -3,7 +3,7 @@ import os,sys,inspect
 sys.path.insert(1, os.path.join(sys.path[0], '../../../'))
 import torch.nn.functional as F
 
-from core.models.trunks.unet.unet_parts import *
+from core.models.trunks.unet_parts import *
 import torch.nn as nn
 
 class WNet(nn.Module):

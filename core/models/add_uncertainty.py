@@ -1,9 +1,34 @@
 import os,sys,inspect
 sys.path.insert(1, os.path.join(sys.path[0], '../../'))
 import torch
-from core.models.finallayers.quantile_layer import QuantileRegressionLayer
+import torch.nn as nn
+from core.models.finallayers.quantile_layer import QuantileRegressionLayer, quantile_regression_loss_fn, quantile_regression_nested_sets, quantile_regression_nested_sets_from_output
 from core.models.trunks.wnet import WNet
+from core.models.trunks.unet import UNet
 
+class ModelWithUncertainty(nn.Module):
+  def __init__(self, baseModel, last_layer, in_train_loss_fn, in_nested_sets_fn, in_nested_sets_from_output_fn, params):
+      super(ModelWithUncertainty, self).__init__()
+      self.baseModel = baseModel
+      self.last_layer = last_layer
+      self.params = params
+      self.lhat = None
+      self.in_train_loss_fn = in_train_loss_fn
+      self.in_nested_sets_fn = in_nested_sets_fn
+      self.in_nested_sets_from_output_fn = in_nested_sets_from_output_fn
+
+  def forward(self, x):
+    x = self.baseModel(x)
+    return self.last_layer(x)
+
+  def loss_fn(self, pred, target):
+    return self.in_train_loss_fn(pred,target,self.params) 
+
+  def nested_sets(self, x, lam=None):
+    return self.in_nested_sets_fn(self, x, lam)
+
+  def nested_sets_from_output_fn(self, output, lam=None):
+    return self.in_nested_sets_from_output_fn(self, output, lam)
 
 def add_uncertainty(model, params): 
   base_model_type = None
@@ -13,7 +38,9 @@ def add_uncertainty(model, params):
   nested_sets_from_output_fn = None
 
   # Get the trunk
-  if params["model_type"] == "WNet":
+  if params["model"] == "UNet":
+    base_model_type = UNet
+  elif params["model"] == "WNet":
     base_model_type = WNet
   else:
     raise NotImplementedError
@@ -26,25 +53,4 @@ def add_uncertainty(model, params):
   else:
     raise NotImplementedError
 
-  class _model_with_uncertainty(WNet):
-    def __init__(self, baseModel):
-        self.__class__ = type(baseModel.__class__.__name__,
-                              (self.__class__, baseModel.__class__),
-                              {})
-        self.__dict__ = baseModel.__dict__
-        self.trunk = baseModel
-  
-    def forward(self, x):
-      x = self.trunk(x)
-      return last_layer(x)
-
-    def loss_fn(self, pred, target, params):
-      return train_loss_fn(self,pred,target,params) 
-
-    def nested_sets(self, x, lam=None):
-      return nested_sets_fn(self, x, lam)
-
-    def nested_sets_from_output_fn(self, output, lam=None):
-      return nested_sets_from_output_fn(self, output, lam)
-
-  return _model_with_uncertainty(model)
+  return ModelWithUncertainty(model, last_layer, train_loss_fn, nested_sets_fn, nested_sets_from_output_fn, params)

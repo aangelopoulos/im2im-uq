@@ -1,26 +1,19 @@
-group:
-  value: "test"
-output_dir:
-  value: "tests/test_add_uncertainty/outputs/"
-dataset:
-  value: "CAREDrosophila"
-num_classes:
-  value: 10
-data_split_percentages:
-  value: [0.8, 0.1, 0.1]
-model:
-  value: "WNet"
-device:
-  value: "cuda"
-epochs:
-  value: 2 
-batch_size:
-  value: 32
-lr:
-  value: 0.0001
-checkpoint_dir:
-  value: "tests/test_add_uncertainty/checkpoints"
-checkpoint_every:
-  value: 10
-validate_every:
-  value: 10 
+name: "test_add_uncertainty"
+group: "test"
+output_dir: "tests/test_add_uncertainty/outputs/"
+dataset: "CAREDrosophila"
+data_split_percentages: [0.8, 0.1, 0.1]
+model: "UNet"
+uncertainty_type: "quantiles"
+q_lo: 0.05
+q_hi: 0.95
+q_lo_weight: 1
+q_hi_weight: 1
+mse_weight: 1
+device: "cuda"
+epochs: 100 
+batch_size: 32
+lr: 0.0001
+checkpoint_dir: "tests/test_add_uncertainty/checkpoints"
+checkpoint_every: 10
+validate_every: 10 

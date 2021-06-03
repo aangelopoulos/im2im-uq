@@ -16,7 +16,7 @@ from core.scripts.eval import eval_net
 from torch.utils.data import DataLoader, random_split
 import core.utils as utils
 import pdb
-import pickle as pkl
+import dill as pkl
 
 def train_net(net,
               train_dataset,
@@ -27,7 +27,8 @@ def train_net(net,
               lr,
               checkpoint_dir,
               checkpoint_every,
-              validate_every):
+              validate_every,
+              config=None): # config not normally needed due to wandb
 
     global_step = 0
 
@@ -38,7 +39,11 @@ def train_net(net,
     optimizer = optim.Adam(net.parameters(), lr=lr)
 
     # WandB magic
-    wandb.watch(net, log_freq = 100)
+    try:
+      wandb.watch(net, log_freq = 100)
+    except:
+      wandb.init(config=config)
+      wandb.watch(net, log_freq = 100)
 
     for epoch in range(epochs):
         net.train()
@@ -50,6 +55,7 @@ def train_net(net,
             x = [x[i].to(device=device, dtype=torch.float32) for i in range(len(x))]
             labels = labels.to(device=device)
 
+            # Predict
             labels_pred = net(*x) # Unpack tuple
             loss = net.loss_fn(labels_pred, labels)
             loss.retain_grad()
@@ -82,7 +88,9 @@ def train_net(net,
                     logging.info('Created checkpoint directory')
                 except OSError:
                     pass
-                torch.save(net,
-                           checkpoint_dir + f'CP_epoch{epoch + 1}.pth')
+                with open(checkpoint_dir + f'/CP_epoch{epoch + 1}.pth', 'wb') as handle:
+                  _net = pkl.dumps(net)
+                  pkl.dump(_net, handle, protocol=pkl.HIGHEST_PROTOCOL)
+
                 logging.info(f'Checkpoint {epoch + 1} saved !')
         net.eval()
