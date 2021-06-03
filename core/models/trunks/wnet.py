@@ -10,6 +10,7 @@ class WNet(nn.Module):
     def __init__(self, n_channels_in, n_channels_out, bilinear=True):
         super(WNet, self).__init__()
         self.n_channels_in = n_channels_in
+        self.n_channels_middle = 32
         self.n_channels_out = n_channels_out
         self.bilinear = bilinear
         factor = 2 if bilinear else 1
@@ -32,7 +33,7 @@ class WNet(nn.Module):
         self.up2 = Up(512, 256 // factor, bilinear)
         self.up3 = Up(256, 128 // factor, bilinear)
         self.up4 = Up(128, 64, bilinear)
-        self.out = OutConv(64, 32)
+        self.out = OutConv(64, self.n_channels_middle)
 
     def forward(self, x):
         p1, p2 = (x[:,0:1,:,:], x[:,1:2,:,:])

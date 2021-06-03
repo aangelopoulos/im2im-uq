@@ -8,6 +8,7 @@ import torchvision.transforms as T
 import yaml
 
 from core.scripts.train import train_net
+from core.models.add_uncertainty import add_uncertainty
 
 if __name__ == "__main__":
   wandb.init() 
@@ -25,6 +26,9 @@ if __name__ == "__main__":
   if wandb.config["dataset"] == "CIFAR10":
     if wandb.config["model"] == "ResNet18":
       model = torchvision.models.resnet18(num_classes=wandb.config["num_classes"])
+
+  # ADD LAST LAYER OF MODEL
+  model = add_uncertainty(model, wandb.config)
 
   # DATA SPLITTING
   lengths = np.round(len(dataset)*np.array(wandb.config["data_split_percentages"])).astype(int)

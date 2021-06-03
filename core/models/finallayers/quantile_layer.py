@@ -1,11 +1,14 @@
+import os,sys,inspect
+sys.path.insert(1, os.path.join(sys.path[0], '../../../'))
 import torch
 import torch.nn as nn
+from core.models.losses.pinball import PinballLoss
 
-class Quantile_Regression_Layer(nn.Module):
-    def __init__(self, n_channels_middle, n_channels_out, q_lo, q_hi, params):
-        super(Quantile_Layer, self).__init__()
-        self.q_lo = q_lo
-        self.q_hi = q_hi
+class QuantileRegressionLayer(nn.Module):
+    def __init__(self, n_channels_middle, n_channels_out, params):
+        super(QuantileRegressionLayer, self).__init__()
+        self.q_lo = params["q_lo"] 
+        self.q_hi = parmas["q_hi"]
         self.params = params
 
         self.lower = nn.Conv2d(n_channels_middle, n_channels_out, kernel_size=3, padding=1)
@@ -16,9 +19,9 @@ class Quantile_Regression_Layer(nn.Module):
         output = torch.cat((self.lower(x), self.prediction(x), self.upper(x)), dim=1)
         return output
 
-def quantile_regression_loss_fn(pred, target, q_lo, q_hi, params):
-  q_lo_loss = PinballLoss(quantile=q_lo)
-  q_hi_loss = PinballLoss(quantile=q_hi)
+def quantile_regression_loss_fn(pred, target, params):
+  q_lo_loss = PinballLoss(quantile=params["q_lo"])
+  q_hi_loss = PinballLoss(quantile=parmas["q_hi"])
   mse_loss = nn.MSELoss()
 
   loss = params['q_lo_weight'] * q_lo_loss(pred[:,0,:,:], target.squeeze()) + \
