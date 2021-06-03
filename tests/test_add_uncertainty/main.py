@@ -17,7 +17,7 @@ if __name__ == "__main__":
     with open(dir_path + '/config.yml') as file:
       config = yaml.safe_load(file)
     path = '/clusterfs/abc/angelopoulos/care/Isotropic_Drosophila/train_data/data_label.npz'
-    dataset = CAREDrosophilaDataset(path, num_instances='all', normalize='min-max')
+    dataset = CAREDrosophilaDataset(path, num_instances=50, normalize='min-max')
     trunk = UNet(1,1)
     model = add_uncertainty(trunk, config)
     lengths = np.round(len(dataset)*np.array(config["data_split_percentages"])).astype(int)

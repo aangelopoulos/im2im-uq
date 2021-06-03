@@ -72,25 +72,39 @@ def train_net(net,
 
         wandb.log({"iter":global_step, "train_loss":epoch_loss/len(train_loader)})
 
-        if (epoch+1) % validate_every == 0:
-            # validation
-            val_loss = eval_net(net, val_loader, device)
-            wandb.log({"iter":global_step, "val_loss":val_loss})
-            # TODO: Figure out how to log this in a general way.
-            #wandb.log({"examples": [wandb.Image(i) for i in Images]})
-            #scheduler.step(val_loss)
+        with torch.no_grad():
 
-        if (epoch+1) % checkpoint_every == 0:
-            print('saving checkpoint')
-            if checkpoint_dir != None:
-                try:
-                    os.mkdir(checkpoint_dir)
-                    logging.info('Created checkpoint directory')
-                except OSError:
-                    pass
-                with open(checkpoint_dir + f'/CP_epoch{epoch + 1}.pth', 'wb') as handle:
-                  _net = pkl.dumps(net)
-                  pkl.dump(_net, handle, protocol=pkl.HIGHEST_PROTOCOL)
+          if (epoch+1) % validate_every == 0:
+              # validation
+              val_loss = eval_net(net, val_loader, device)
+              wandb.log({"iter":global_step, "val_loss":val_loss})
+              # TODO: Figure out how to log this in a general way.
+              try:
+                wandb.log({"iter":global_step, "examples_input": [wandb.Image((255 * val_dataset[img_idx][0].squeeze()).numpy().astype(np.uint8)) for img_idx in range(5)]})
+                examples_output = [(255 * net(val_dataset[img_idx][0].unsqueeze(0).to(device)).cpu().squeeze().permute(1,2,0)).numpy() for img_idx in range(5)]
+                examples_output = [np.maximum(0,np.minimum(example, 255)) for example in examples_output]
+                examples_lower_quantile = [wandb.Image(example[:,:,0]) for example in examples_output]
+                examples_prediction = [wandb.Image(example[:,:,1]) for example in examples_output]
+                examples_upper_quantile = [wandb.Image(example[:,:,2]) for example in examples_output]
+                wandb.log({"iter":global_step, "Lower quantile": examples_lower_quantile})
+                wandb.log({"iter":global_step, "Predictions": examples_prediction})
+                wandb.log({"iter":global_step, "Upper quantile": examples_upper_quantile})
+                wandb.log({"iter":global_step, "Ground truth": [wandb.Image((255 * val_dataset[img_idx][1].squeeze()).numpy().astype(np.uint8)) for img_idx in range(5)]})
+              except:
+                print("Failed logging images.")
+              #scheduler.step(val_loss)
 
-                logging.info(f'Checkpoint {epoch + 1} saved !')
+          if (epoch+1) % checkpoint_every == 0:
+              print('saving checkpoint')
+              if checkpoint_dir != None:
+                  try:
+                      os.mkdir(checkpoint_dir)
+                      logging.info('Created checkpoint directory')
+                  except OSError:
+                      pass
+                  with open(checkpoint_dir + f'/CP_epoch{epoch + 1}.pth', 'wb') as handle:
+                    _net = pkl.dumps(net)
+                    pkl.dump(_net, handle, protocol=pkl.HIGHEST_PROTOCOL)
+
+                  logging.info(f'Checkpoint {epoch + 1} saved !')
         net.eval()
