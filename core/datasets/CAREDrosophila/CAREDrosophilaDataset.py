@@ -28,7 +28,7 @@ class CAREDrosophilaDataset(Dataset):
           print('normalizing via ' + normalize + ' normalization ...')
           self.x, self.params = utils.normalize(self.x, type=normalize, per_pixel=False, input_output='input')
           self.y, params_y = utils.normalize(self.y, type=normalize, per_pixel=False, input_output='output')
-        self.params.update(params_y)
+          self.params.update(params_y)
 
     def __len__(self):
         return self.x.shape[0]
