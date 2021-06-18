@@ -27,7 +27,7 @@ class ModelWithUncertainty(nn.Module):
   def nested_sets(self, x, lam=None):
     return self.in_nested_sets_fn(self, x, lam)
 
-  def nested_sets_from_output_fn(self, output, lam=None):
+  def nested_sets_from_output(self, output, lam=None):
     return self.in_nested_sets_from_output_fn(self, output, lam)
 
 def add_uncertainty(model, params): 

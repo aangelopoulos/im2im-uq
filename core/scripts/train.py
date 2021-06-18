@@ -25,15 +25,25 @@ def train_net(net,
               epochs,
               batch_size,
               lr,
+              load_from_checkpoint,
               checkpoint_dir,
               checkpoint_every,
               validate_every,
               config=None): # config not normally needed due to wandb
-
+    # If we're loading from a checkpoint, do so.
+    if load_from_checkpoint:
+      checkpoint_final_path = checkpoint_dir + f'/CP_epoch{epochs}.pth'
+      if os.path.exists(checkpoint_final_path):
+        with open(checkpoint_final_path, 'rb') as f:
+          net = pkl.load(f)
+        print(f"Model loaded from checkpoint {checkpoint_final_path}")
+        return
+    
+    # Otherwise, train the model
     global_step = 0
 
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=0)
-    val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=batch_size, shuffle=True, num_workers=0)
+    val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
     net.to(device=device)
 
     optimizer = optim.Adam(net.parameters(), lr=lr)
@@ -49,11 +59,9 @@ def train_net(net,
         net.train()
         print('epoch ' + str(epoch+1) + '\n')
         epoch_loss = 0
-        for batch in train_loader:
-            labels = batch[-1]
-            x = tuple([batch[i] for i in range(len(batch)-1)])
-            x = [x[i].to(device=device, dtype=torch.float32) for i in range(len(x))]
-            labels = labels.to(device=device)
+        for batch in tqdm(train_loader):
+            labels = batch[-1].to(device=device)
+            x = tuple([batch[i].to(device=device, dtype=torch.float32) for i in range(len(batch)-1)])
 
             # Predict
             labels_pred = net(*x) # Unpack tuple
@@ -104,8 +112,8 @@ def train_net(net,
                       pass
                   with open(checkpoint_dir + f'/CP_epoch{epoch + 1}.pth', 'wb') as handle:
                     print("TODO: FIX ERROR WITH MULTIPROCESSING; MODEL NOT THREADSAFE")
-                    #_net = pkl.dumps(net)
-                    #pkl.dump(_net, handle, protocol=pkl.HIGHEST_PROTOCOL)
+                    _net = pkl.dumps(net)
+                    pkl.dump(_net, handle, protocol=pkl.HIGHEST_PROTOCOL)
 
                   logging.info(f'Checkpoint {epoch + 1} saved !')
         net.eval()

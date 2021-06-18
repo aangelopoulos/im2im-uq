@@ -2,11 +2,12 @@ import torch
 import torch.nn.functional as F
 from tqdm import tqdm
 import matplotlib.pyplot as plt
-
+import pdb
 
 def eval_net(net, loader, device):
     with torch.no_grad():
       net.eval()
+      net.to(device=device)
       #label_type = torch.float32 if net.n_classes == 1 else torch.long
       n_val = len(loader)  # the number of batch
       if n_val == 0:
@@ -17,10 +18,9 @@ def eval_net(net, loader, device):
 
       with tqdm(total=n_val, desc='Validation round', unit='batch', leave=False) as pbar:
           for batch in loader:
-              labels = batch[-1]
+              labels = batch[-1].to(device=device)
               x = tuple([batch[i] for i in range(len(batch)-1)])
               x = [x[i].to(device=device, dtype=torch.float32) for i in range(len(x))]
-              labels = labels.to(device=device)
 
               # Predict
               labels_pred = net(*x) # Unpack tuple

@@ -5,15 +5,21 @@ dataset: "CAREDrosophila"
 data_split_percentages: [0.8, 0.1, 0.1]
 model: "UNet"
 uncertainty_type: "quantiles"
+alpha: 0.1
+delta: 0.1
+num_lambdas: 1000
+rcps_loss: "fraction_missed"
 q_lo: 0.05
 q_hi: 0.95
 q_lo_weight: 1
 q_hi_weight: 1
+maximum_lambda: 15
 mse_weight: 1
 device: "cuda"
-epochs: 500 
+epochs: 10 
 batch_size: 32
 lr: 0.0001
+load_from_checkpoint: True
 checkpoint_dir: "tests/test_add_uncertainty/checkpoints"
 checkpoint_every: 10
 validate_every: 10 
