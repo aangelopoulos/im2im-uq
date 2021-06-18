@@ -112,8 +112,10 @@ def train_net(net,
                       pass
                   with open(checkpoint_dir + f'/CP_epoch{epoch + 1}.pth', 'wb') as handle:
                     print("TODO: FIX ERROR WITH MULTIPROCESSING; MODEL NOT THREADSAFE")
+                    net.eval()
                     _net = pkl.dumps(net)
                     pkl.dump(_net, handle, protocol=pkl.HIGHEST_PROTOCOL)
+                    net.train()
 
                   logging.info(f'Checkpoint {epoch + 1} saved !')
         net.eval()
