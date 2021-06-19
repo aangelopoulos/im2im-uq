@@ -13,7 +13,7 @@ q_lo: 0.05
 q_hi: 0.95
 q_lo_weight: 1
 q_hi_weight: 1
-maximum_lambda: 2 
+maximum_lambda: 1.2 
 mse_weight: 1
 device: "cuda"
 epochs: 80 

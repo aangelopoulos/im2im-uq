@@ -9,7 +9,7 @@ from core.utils import fix_randomness
 import numpy as np
 from torch.utils.data import Dataset, DataLoader, random_split
 from core.scripts.train import train_net
-from core.scripts.eval import eval_net
+from core.scripts.eval import eval_net, eval_risk_size
 import yaml
 import pdb
 
@@ -41,5 +41,6 @@ if __name__ == "__main__":
     val_loss = eval_net(model,val_loader,config['device'])
     print(f"Done validating! Validation Loss: {val_loss}")
     model = calibrate_model(model, calib_dataset, config)
-    pdb.set_trace()
     print(f"Model calibrated! lambda hat = {model.lhat}")
+    risk, sizes = eval_risk_size(model, val_dataset, config)
+    print(f"Risk: {risk}  |  Mean size: {sizes.mean()}")

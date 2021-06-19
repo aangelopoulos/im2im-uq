@@ -1,8 +1,24 @@
+import os,sys,inspect
+sys.path.insert(1, os.path.join(sys.path[0], '../../'))
 import torch
 import torch.nn.functional as F
 from tqdm import tqdm
 import matplotlib.pyplot as plt
+from torch.utils.data import TensorDataset
+from core.calibration.calibrate_model import get_rcps_loss_fn, get_rcps_losses_and_sizes_from_outputs
 import pdb
+
+def eval_risk_size(model, dataset, config):
+  with torch.no_grad():
+    model.eval()
+    device = config['device']
+    rcps_loss_fn = get_rcps_loss_fn(config)
+    model = model.to(device)
+    outputs = torch.cat([model(x[0].unsqueeze(0).to(device)).cpu() for x in dataset], dim=0)
+    labels = torch.cat([x[1].unsqueeze(0).cpu() for x in dataset], dim=0)
+    out_dataset = TensorDataset(outputs,labels)
+    losses, sizes = get_rcps_losses_and_sizes_from_outputs(model, out_dataset, rcps_loss_fn, device)
+    return losses.mean(), sizes
 
 def eval_net(net, loader, device):
     with torch.no_grad():

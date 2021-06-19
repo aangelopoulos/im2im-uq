@@ -44,10 +44,12 @@ def quantile_regression_nested_sets_from_output(model, output, lam=None):
       if model.lhat == None:
           raise Exception("You have to specify lambda unless your model is already calibrated.")
       lam = model.lhat 
-  output[:,0,:,:] = torch.minimum(output[:,0,:,:], output[:,1,:,:]-1e-2)
-  output[:,2,:,:] = torch.maximum(output[:,2,:,:], output[:,1,:,:]+1e-2)
+  output[:,0,:,:] = torch.minimum(output[:,0,:,:], output[:,1,:,:]-1e-6)
+  output[:,2,:,:] = torch.maximum(output[:,2,:,:], output[:,1,:,:]+1e-6)
   upper_edge = lam * (output[:,2,:,:] - output[:,1,:,:]) + output[:,1,:,:] 
   lower_edge = output[:,1,:,:] - lam * (output[:,1,:,:] - output[:,0,:,:])
-  upper_edge = torch.maximum(upper_edge, output[:,1,:,:] + 1e-1) # set a lower bound on the size.
-  lower_edge = torch.minimum(lower_edge, output[:,1,:,:] - 1e-1)
+  upper_edge = torch.maximum(upper_edge, output[:,1,:,:] + 1e-6) # set a lower bound on the size.
+  lower_edge = torch.minimum(lower_edge, output[:,1,:,:] - 1e-6)
+  upper_edge[upper_edge > 1] = 1.0
+  lower_edge[lower_edge < 0] = 0.0
   return lower_edge, upper_edge 
