@@ -25,20 +25,21 @@ if __name__ == "__main__":
     lengths = np.round(len(dataset)*np.array(config["data_split_percentages"])).astype(int)
     lengths[-1] = len(dataset)-(lengths.sum()-lengths[-1])
     train_dataset, calib_dataset, val_dataset = random_split(dataset, lengths.tolist())
-    train_net(model,
-              train_dataset,
-              val_dataset,
-              config['device'],
-              config['epochs'],
-              config['batch_size'],
-              config['lr'],
-              config['load_from_checkpoint'],
-              config['checkpoint_dir'],
-              config['checkpoint_every'],
-              config['validate_every'])   
+    model = train_net(model,
+                      train_dataset,
+                      val_dataset,
+                      config['device'],
+                      config['epochs'],
+                      config['batch_size'],
+                      config['lr'],
+                      config['load_from_checkpoint'],
+                      config['checkpoint_dir'],
+                      config['checkpoint_every'],
+                      config['validate_every'])   
+    model.eval()
     val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False, num_workers=0)
     val_loss = eval_net(model,val_loader,config['device'])
     print(f"Done validating! Validation Loss: {val_loss}")
-    calibrate_model(model, calib_dataset, config)
+    model = calibrate_model(model, calib_dataset, config)
     pdb.set_trace()
     print(f"Model calibrated! lambda hat = {model.lhat}")

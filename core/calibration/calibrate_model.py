@@ -21,7 +21,7 @@ def get_rcps_losses_from_outputs(model, out_dataset, rcps_loss_fn, lam, device):
   return torch.cat(losses,dim=0)
 
 def fraction_missed_loss(pset,label):
-  misses = (pset[0].squeeze() > label.squeeze()).float() + (pset[1].squeeze() < label.squeeze()).float()
+  misses = torch.maximum((pset[0].squeeze() > label.squeeze()).float() + (pset[1].squeeze() < label.squeeze()).float(), 1.0)
   d = len(misses.shape)
   return misses.mean(dim=tuple(range(1,d)))
 
@@ -34,6 +34,7 @@ def get_rcps_loss_fn(config):
 
 def calibrate_model(model, dataset, config):
   with torch.no_grad():
+    model.eval()
     alpha = config['alpha']
     delta = config['delta']
     device = config['device']
@@ -45,9 +46,11 @@ def calibrate_model(model, dataset, config):
     out_dataset = TensorDataset(outputs,labels)
     print("Calibrating...")
     for lam in reversed(lambdas):
+      pdb.set_trace()
       losses = get_rcps_losses_from_outputs(model, out_dataset, rcps_loss_fn, lam-1/config['num_lambdas'], device)
       Rhat = losses.mean()
       print(f"\rLambda: {lam:.4f}  |  Rhat: {Rhat:.4f}",end='')
       if Rhat > alpha: # TODO: Replace with concentration
         model.lhat = lam
-        return 
+        break
+    return model 
