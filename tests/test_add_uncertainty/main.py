@@ -13,8 +13,11 @@ from core.scripts.eval import eval_net, eval_risk_size
 import yaml
 import pdb
 
+import wandb
+
 if __name__ == "__main__":
     fix_randomness()
+    wandb.init()
     dir_path = os.path.dirname(os.path.realpath(__file__))
     with open(dir_path + '/config.yml') as file:
       config = yaml.safe_load(file)
@@ -35,7 +38,8 @@ if __name__ == "__main__":
                       config['load_from_checkpoint'],
                       config['checkpoint_dir'],
                       config['checkpoint_every'],
-                      config['validate_every'])   
+                      config['validate_every'],
+                      config)   
     model.eval()
     val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False, num_workers=0)
     val_loss = eval_net(model,val_loader,config['device'])

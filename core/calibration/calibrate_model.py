@@ -32,7 +32,7 @@ def get_rcps_losses_and_sizes_from_outputs(model, out_dataset, rcps_loss_fn, dev
     x, labels = batch
     sets = model.nested_sets_from_output(x) 
     losses = losses + [rcps_loss_fn(sets, labels),]
-    sets_full = (sets[1]-sets[0]).flatten(start_dim=1).numpy()
+    sets_full = (sets[1]-sets[0]).flatten(start_dim=1).detach().cpu().numpy()
     size_samples = sets_full[range(sets_full.shape[0]),np.random.choice(sets_full.shape[1],size=sets_full.shape[0])]
     sizes = sizes + [torch.tensor(size_samples),]
   return torch.cat(losses,dim=0), torch.cat(sizes,dim=0)
@@ -59,14 +59,14 @@ def calibrate_model(model, dataset, config):
     lambdas = torch.linspace(0,config['maximum_lambda'],config['num_lambdas'])
     rcps_loss_fn = get_rcps_loss_fn(config)
     model = model.to(device)
-    outputs = torch.cat([model(x[0].unsqueeze(0).to(device)).cpu() for x in dataset], dim=0)
-    labels = torch.cat([x[1].unsqueeze(0).cpu() for x in dataset], dim=0)
+    outputs = torch.cat([model(x[0].unsqueeze(0).to(device)) for x in dataset], dim=0).to(device)
+    labels = torch.cat([x[1].unsqueeze(0).to(device) for x in dataset], dim=0).to(device)
     out_dataset = TensorDataset(outputs,labels)
     print("Calibrating...")
     for lam in reversed(lambdas):
       losses = get_rcps_losses_from_outputs(model, out_dataset, rcps_loss_fn, lam-1/config['num_lambdas'], device)
       Rhat = losses.mean()
-      RhatPlus = HB_mu_plus(Rhat, losses.shape[0], delta)
+      RhatPlus = HB_mu_plus(Rhat.item(), losses.shape[0], delta)
       print(f"\rLambda: {lam:.4f}  |  Rhat: {Rhat:.4f}  |  RhatPlus: {RhatPlus:.4f}  ",end='')
       if RhatPlus > alpha: # TODO: Replace with concentration
         model.lhat = lam

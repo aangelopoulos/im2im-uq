@@ -16,10 +16,10 @@ q_hi_weight: 1
 maximum_lambda: 1.2 
 mse_weight: 1
 device: "cuda"
-epochs: 80 
+epochs: 1 
 batch_size: 32
 lr: 0.0001
 load_from_checkpoint: True
 checkpoint_dir: "tests/test_add_uncertainty/checkpoints"
-checkpoint_every: 10
-validate_every: 10 
+checkpoint_every: 1
+validate_every: 1

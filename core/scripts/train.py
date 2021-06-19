@@ -55,15 +55,20 @@ def train_net(net,
               checkpoint_every,
               validate_every,
               config=None): # config not normally needed due to wandb
+
+    if config == None:
+      config = wandb.config
     # If we're loading from a checkpoint, do so.
     if load_from_checkpoint:
-      checkpoint_final_path = checkpoint_dir + f'/CP_epoch{epochs}.pth'
+      checkpoint_final_path = checkpoint_dir + f'/CP_epoch{epochs}_' + config['dataset'] + "_" + str(config['batch_size']) + "_" + str(config['lr']).replace('.','_') + '.pth'
       if os.path.exists(checkpoint_final_path):
-        with open(checkpoint_final_path, 'rb') as f:
-          net = pkl.load(f)
+        try:
+          net = torch.load(checkpoint_final_path)
           net.eval()
-        print(f"Model loaded from checkpoint {checkpoint_final_path}")
-        return net
+          print(f"Model loaded from checkpoint {checkpoint_final_path}")
+          return net
+        except:
+          print(f"Model cannot be loaded from checkpoint. Training now, for {epochs} epochs.")
     
     # Otherwise, train the model
     global_step = 0
@@ -131,13 +136,8 @@ def train_net(net,
                       logging.info('Created checkpoint directory')
                   except OSError:
                       pass
-                  with open(checkpoint_dir + f'/CP_epoch{epoch + 1}.pth', 'wb') as handle:
-                    print("TODO: FIX ERROR WITH MULTIPROCESSING; MODEL NOT THREADSAFE")
-                    net.eval()
-                    pkl.dump(net, handle, protocol=pkl.HIGHEST_PROTOCOL)
-                    #_net = pkl.dumps(net)
-                    #pkl.dump(_net, handle, protocol=pkl.HIGHEST_PROTOCOL)
-                    net.train()
+                  checkpoint_fname = checkpoint_dir + f'/CP_epoch{epoch + 1}_' + config['dataset'] + "_" + str(config['batch_size']) + "_" + str(config['lr']).replace('.','_') + '.pth'
+                  torch.save(net, checkpoint_fname)
 
                   logging.info(f'Checkpoint {epoch + 1} saved !')
         net.eval()

@@ -18,20 +18,32 @@ parameters:
     value: "UNet"
   uncertainty_type: 
     value: "quantiles"
+  alpha: 
+    value: 0.1
+  delta: 
+    value: 0.1
+  num_lambdas: 
+    value: 100
+  rcps_loss: 
+    value: "fraction_missed"
+  maximum_lambda:
+    value: 1.2 
   device:
     value: "cuda"
   epochs:
-    value: 30
+    value: 4 
   batch_size:
     value: 32
   lr:
     values: [1, 0.1, 0.001, 0.0001]
+  load_from_checkpoint: 
+    value: True
   checkpoint_dir:
     value: "experiments/unet_test/checkpoints"
   checkpoint_every:
-    value: 10
+    value: 1
   validate_every:
-    value: 10 
+    value: 1 
   q_lo:
     value: 0.05
   q_hi:

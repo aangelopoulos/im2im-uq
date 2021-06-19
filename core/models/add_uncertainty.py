@@ -5,17 +5,18 @@ import torch.nn as nn
 from core.models.finallayers.quantile_layer import QuantileRegressionLayer, quantile_regression_loss_fn, quantile_regression_nested_sets, quantile_regression_nested_sets_from_output
 from core.models.trunks.wnet import WNet
 from core.models.trunks.unet import UNet
+import jsons
 
 class ModelWithUncertainty(nn.Module):
   def __init__(self, baseModel, last_layer, in_train_loss_fn, in_nested_sets_fn, in_nested_sets_from_output_fn, params):
       super(ModelWithUncertainty, self).__init__()
       self.baseModel = baseModel
       self.last_layer = last_layer
-      self.params = params
-      self.lhat = None
+      self.register_buffer('lhat',None)
       self.in_train_loss_fn = in_train_loss_fn
       self.in_nested_sets_fn = in_nested_sets_fn
       self.in_nested_sets_from_output_fn = in_nested_sets_from_output_fn
+      self.params = params # Make this serializable 
 
   def forward(self, x):
     x = self.baseModel(x)

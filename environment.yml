@@ -28,3 +28,4 @@ dependencies:
   - imageio
   - pip:
     - opencv-contrib-python 
+    - jsons
