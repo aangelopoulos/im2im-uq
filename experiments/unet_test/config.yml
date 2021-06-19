@@ -31,7 +31,7 @@ parameters:
   device:
     value: "cuda"
   epochs:
-    value: 4 
+    value: 30 
   batch_size:
     value: 32
   lr:

@@ -68,7 +68,7 @@ def calibrate_model(model, dataset, config):
       Rhat = losses.mean()
       RhatPlus = HB_mu_plus(Rhat.item(), losses.shape[0], delta)
       print(f"\rLambda: {lam:.4f}  |  Rhat: {Rhat:.4f}  |  RhatPlus: {RhatPlus:.4f}  ",end='')
-      if RhatPlus > alpha: # TODO: Replace with concentration
+      if Rhat >= alpha or RhatPlus > alpha: # TODO: Replace with concentration
         model.lhat = lam
         print("")
         break

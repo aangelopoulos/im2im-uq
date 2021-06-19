@@ -31,7 +31,7 @@ if __name__ == "__main__":
     dataset = torchvision.datasets.CIFAR10('/clusterfs/abc/angelopoulos/CIFAR10', download=True, transform=transform)
   if wandb.config["dataset"] == "CAREDrosophila":
     path = '/clusterfs/abc/angelopoulos/care/Isotropic_Drosophila/train_data/data_label.npz'
-    dataset = CAREDrosophilaDataset(path, num_instances=5000, normalize='min-max')
+    dataset = CAREDrosophilaDataset(path, num_instances='all', normalize='min-max')
   else:
     raise NotImplementedError 
 
@@ -43,7 +43,9 @@ if __name__ == "__main__":
       trunk = UNet(1,1)
 
   # ADD LAST LAYER OF MODEL
-  model = add_uncertainty(trunk, wandb.config)
+  params = { key: wandb.config[key] for key in wandb.config.keys() }
+  print(params)
+  model = add_uncertainty(trunk, params)
 
   # DATA SPLITTING
   lengths = np.round(len(dataset)*np.array(wandb.config["data_split_percentages"])).astype(int)
@@ -61,16 +63,16 @@ if __name__ == "__main__":
                     wandb.config['checkpoint_dir'],
                     wandb.config['checkpoint_every'],
                     wandb.config['validate_every'],
-                    wandb.config)   
+                    params)   
 
   print("Done training!")
   model.eval()
   val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False, num_workers=0)
   val_loss = eval_net(model,val_loader,wandb.config['device'])
   print(f"Done validating! Validation Loss: {val_loss}")
-  model = calibrate_model(model, calib_dataset, wandb.config)
+  model = calibrate_model(model, calib_dataset, params)
   print(f"Model calibrated! lambda hat = {model.lhat}")
-  risk, sizes = eval_risk_size(model, val_dataset, wandb.config)
+  risk, sizes = eval_risk_size(model, val_dataset, params)
   print(f"Risk: {risk}  |  Mean size: {sizes.mean()}")
 
   print(f"Done with lr={curr_lr}")
