@@ -44,7 +44,6 @@ if __name__ == "__main__":
 
   # ADD LAST LAYER OF MODEL
   params = { key: wandb.config[key] for key in wandb.config.keys() }
-  print(params)
   model = add_uncertainty(trunk, params)
 
   # DATA SPLITTING

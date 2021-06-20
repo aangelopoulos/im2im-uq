@@ -17,10 +17,6 @@ class ModelWithUncertainty(nn.Module):
       self.in_nested_sets_fn = in_nested_sets_fn
       self.in_nested_sets_from_output_fn = in_nested_sets_from_output_fn
       self.params = params
-      #for key in params.keys():
-      #  print(key)
-      #  if not isinstance(params[key],str):
-      #    self.register_buffer(str(key),torch.tensor(params[key]))
   
   def forward(self, x):
     x = self.baseModel(x)
