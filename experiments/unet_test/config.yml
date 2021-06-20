@@ -31,19 +31,19 @@ parameters:
   device:
     value: "cuda"
   epochs:
-    value: 30 
+    value: 20 
   batch_size:
     value: 32
   lr:
-    values: [1, 0.1, 0.001, 0.0001]
+    values: [0.001, 0.005, 0.0001, 0.00001]
   load_from_checkpoint: 
     value: True
   checkpoint_dir:
     value: "experiments/unet_test/checkpoints"
   checkpoint_every:
-    value: 1
+    value: 10
   validate_every:
-    value: 1 
+    value: 10
   q_lo:
     value: 0.05
   q_hi:
