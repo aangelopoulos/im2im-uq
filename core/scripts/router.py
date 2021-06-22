@@ -73,5 +73,6 @@ if __name__ == "__main__":
   print(f"Model calibrated! lambda hat = {model.lhat}")
   risk, sizes = eval_risk_size(model, val_dataset, params)
   print(f"Risk: {risk}  |  Mean size: {sizes.mean()}")
+  wandb.log({"risk": risk, "mean_size":sizes.mean()})
 
-  print(f"Done with lr={curr_lr}")
+  print(f"Done with {str(params)}")

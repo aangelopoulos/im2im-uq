@@ -32,13 +32,13 @@ def get_rcps_losses_and_sizes_from_outputs(model, out_dataset, rcps_loss_fn, dev
     x, labels = batch
     sets = model.nested_sets_from_output(x) 
     losses = losses + [rcps_loss_fn(sets, labels),]
-    sets_full = (sets[1]-sets[0]).flatten(start_dim=1).detach().cpu().numpy()
+    sets_full = (sets[2]-sets[0]).flatten(start_dim=1).detach().cpu().numpy()
     size_samples = sets_full[range(sets_full.shape[0]),np.random.choice(sets_full.shape[1],size=sets_full.shape[0])]
     sizes = sizes + [torch.tensor(size_samples),]
   return torch.cat(losses,dim=0), torch.cat(sizes,dim=0)
 
 def fraction_missed_loss(pset,label):
-  misses = (pset[0].squeeze() > label.squeeze()).float() + (pset[1].squeeze() < label.squeeze()).float()
+  misses = (pset[0].squeeze() > label.squeeze()).float() + (pset[2].squeeze() < label.squeeze()).float()
   misses[misses > 1.0] = 1.0
   d = len(misses.shape)
   return misses.mean(dim=tuple(range(1,d)))

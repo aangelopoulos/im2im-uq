@@ -17,7 +17,7 @@ parameters:
   model:
     value: "UNet"
   uncertainty_type: 
-    value: "quantiles"
+    values: ["residual_magnitude", "gaussian", "quantiles"]
   alpha: 
     value: 0.1
   delta: 
@@ -27,7 +27,7 @@ parameters:
   rcps_loss: 
     value: "fraction_missed"
   maximum_lambda:
-    value: 1.2 
+    value: 6 
   device:
     value: "cuda"
   epochs:
@@ -35,7 +35,7 @@ parameters:
   batch_size:
     value: 32
   lr:
-    values: [0.001, 0.005, 0.0001, 0.00001]
+    value: 0.0001
   load_from_checkpoint: 
     value: True
   checkpoint_dir:
@@ -54,3 +54,5 @@ parameters:
     value: 1
   mse_weight:
     value: 1
+  num_softmax:
+    value: 1000

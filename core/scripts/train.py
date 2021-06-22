@@ -18,27 +18,36 @@ import core.utils as utils
 import pdb
 import dill as pkl
 
+def transform_output(x):
+  x = np.maximum(0,np.minimum(255*x.cpu().squeeze(), 255))
+  if len(x.shape) == 3:
+    x = x.permute(1,2,0)
+  return x.numpy().astype(np.uint8)
+
 def run_validation(net,
                    val_loader,
                    val_dataset,
                    device,
-                   global_step):
+                   global_step,
+                   epoch):
   with torch.no_grad():
     net.eval()
     val_loss = eval_net(net, val_loader, device)
-    wandb.log({"iter":global_step, "val_loss":val_loss})
-    # TODO: Figure out how to log this in a general way.
+    wandb.log({"epoch": epoch, "iter":global_step, "val_loss":val_loss})
+    # Plot images 
     try:
-      wandb.log({"iter":global_step, "examples_input": [wandb.Image((255 * val_dataset[img_idx][0].squeeze()).numpy().astype(np.uint8)) for img_idx in range(5)]})
-      examples_output = [(255 * net(val_dataset[img_idx][0].unsqueeze(0).to(device)).cpu().squeeze().permute(1,2,0)).numpy() for img_idx in range(5)]
-      examples_output = [np.maximum(0,np.minimum(example, 255)) for example in examples_output]
-      examples_lower_quantile = [wandb.Image(example[:,:,0]) for example in examples_output]
-      examples_prediction = [wandb.Image(example[:,:,1]) for example in examples_output]
-      examples_upper_quantile = [wandb.Image(example[:,:,2]) for example in examples_output]
-      wandb.log({"iter":global_step, "Lower quantile": examples_lower_quantile})
-      wandb.log({"iter":global_step, "Predictions": examples_prediction})
-      wandb.log({"iter":global_step, "Upper quantile": examples_upper_quantile})
-      wandb.log({"iter":global_step, "Ground truth": [wandb.Image((255 * val_dataset[img_idx][1].squeeze()).numpy().astype(np.uint8)) for img_idx in range(5)]})
+      # First log the input images
+      wandb.log({"epoch": epoch, "iter":global_step, "examples_input": [wandb.Image(transform_output(val_dataset[img_idx][0])) for img_idx in range(5)]})
+      # Get the prediction sets and properly organize them 
+      examples_output = [net.nested_sets((val_dataset[img_idx][0].unsqueeze(0).to(device),),lam=1.0) for img_idx in range(5)]
+      examples_lower_edge = [wandb.Image(transform_output(example[0])) for example in examples_output]
+      examples_prediction = [wandb.Image(transform_output(example[1])) for example in examples_output]
+      examples_upper_edge = [wandb.Image(transform_output(example[2])) for example in examples_output]
+      # Log everything
+      wandb.log({"epoch": epoch, "iter":global_step, "Lower edge": examples_lower_edge})
+      wandb.log({"epoch": epoch, "iter":global_step, "Predictions": examples_prediction})
+      wandb.log({"epoch": epoch, "iter":global_step, "Upper edge": examples_upper_edge})
+      wandb.log({"epoch": epoch, "iter":global_step, "Ground truth": [wandb.Image(transform_output(val_dataset[img_idx][1])) for img_idx in range(5)]})
     except:
       print("Failed logging images.")
   net.train()
@@ -60,7 +69,7 @@ def train_net(net,
       config = wandb.config
     # If we're loading from a checkpoint, do so.
     if load_from_checkpoint:
-      checkpoint_final_path = checkpoint_dir + f'/CP_epoch{epochs}_' + config['dataset'] + "_" + str(config['batch_size']) + "_" + str(config['lr']).replace('.','_') + '.pth'
+      checkpoint_final_path = checkpoint_dir + f'/CP_epoch{epochs}_' + config['dataset'] + "_" + config['uncertainty_type'] + "_" + str(config['batch_size']) + "_" + str(config['lr']).replace('.','_') + '.pth'
       if os.path.exists(checkpoint_final_path):
         try:
           net = torch.load(checkpoint_final_path)
@@ -90,7 +99,8 @@ def train_net(net,
                    val_loader,
                    val_dataset,
                    device,
-                   global_step)
+                   global_step,
+                   0)
 
     for epoch in range(epochs):
         net.train()
@@ -125,7 +135,8 @@ def train_net(net,
                              val_loader,
                              val_dataset,
                              device,
-                             global_step)
+                             global_step,
+                             epoch)
               #scheduler.step(val_loss)
 
           if (epoch+1) % checkpoint_every == 0:
@@ -136,7 +147,7 @@ def train_net(net,
                       logging.info('Created checkpoint directory')
                   except OSError:
                       pass
-                  checkpoint_fname = checkpoint_dir + f'/CP_epoch{epoch + 1}_' + config['dataset'] + "_" + str(config['batch_size']) + "_" + str(config['lr']).replace('.','_') + '.pth'
+                  checkpoint_fname = checkpoint_dir + f'/CP_epoch{epoch + 1}_' + config['dataset'] + "_" + config['uncertainty_type'] + "_" + str(config['batch_size']) + "_" + str(config['lr']).replace('.','_') + '.pth'
                   torch.save(net, checkpoint_fname)
 
                   logging.info(f'Checkpoint {epoch + 1} saved !')
