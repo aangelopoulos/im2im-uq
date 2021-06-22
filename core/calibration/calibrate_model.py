@@ -59,8 +59,15 @@ def calibrate_model(model, dataset, config):
     lambdas = torch.linspace(0,config['maximum_lambda'],config['num_lambdas'])
     rcps_loss_fn = get_rcps_loss_fn(config)
     model = model.to(device)
-    outputs = torch.cat([model(x[0].unsqueeze(0).to(device)) for x in dataset], dim=0).to(device)
-    labels = torch.cat([x[1].unsqueeze(0).to(device) for x in dataset], dim=0).to(device)
+    labels = torch.cat([x[1].unsqueeze(0).to(device) for x in dataset], dim=0)
+    outputs = []
+    for i in range(len(dataset)):
+      print(i)
+      x = dataset[i][0].unsqueeze(0).to(device)
+      x = model(x)
+      print('calculated')
+      outputs = outputs + [x,]
+    outputs = torch.cat(outputs, dim=0)
     out_dataset = TensorDataset(outputs,labels)
     print("Calibrating...")
     for lam in reversed(lambdas):

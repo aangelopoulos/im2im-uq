@@ -13,7 +13,7 @@ q_lo: 0.05
 q_hi: 0.95
 q_lo_weight: 1
 q_hi_weight: 1
-maximum_lambda: 20 
+maximum_lambda: 1 
 mse_weight: 1
 device: "cuda"
 epochs: 1 
@@ -23,4 +23,4 @@ load_from_checkpoint: True
 checkpoint_dir: "tests/test_add_uncertainty/checkpoints"
 checkpoint_every: 1
 validate_every: 1
-num_softmax: 1000
+num_softmax: 50 
