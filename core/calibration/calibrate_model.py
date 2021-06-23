@@ -62,10 +62,8 @@ def calibrate_model(model, dataset, config):
     labels = torch.cat([x[1].unsqueeze(0).to(device) for x in dataset], dim=0)
     outputs = []
     for i in range(len(dataset)):
-      print(i)
       x = dataset[i][0].unsqueeze(0).to(device)
       x = model(x)
-      print('calculated')
       outputs = outputs + [x,]
     outputs = torch.cat(outputs, dim=0)
     out_dataset = TensorDataset(outputs,labels)

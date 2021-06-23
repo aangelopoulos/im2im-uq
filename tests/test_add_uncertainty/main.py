@@ -46,5 +46,6 @@ if __name__ == "__main__":
     print(f"Done validating! Validation Loss: {val_loss}")
     model = calibrate_model(model, calib_dataset, config)
     print(f"Model calibrated! lambda hat = {model.lhat}")
+    pdb.set_trace()
     risk, sizes = eval_risk_size(model, val_dataset, config)
     print(f"Risk: {risk}  |  Mean size: {sizes.mean()}")
