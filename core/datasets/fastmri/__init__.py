@@ -1,3 +1,4 @@
+from .FastMRIDataset import FastMRIDataset
 from .fftc import fftshift, ifftshift, roll
 from .fftc import fft2c_new as fft2c
 from .fftc import ifft2c_new as ifft2c

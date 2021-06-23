@@ -48,7 +48,6 @@ def et_query(
 
 
 class FastMRIDataset(Dataset):
-    # path should be absolute, num instances is an int or 'all', normalize can be None, 'standard', or 'min-max'
     def __init__(self, path, normalize, mask_info, num_volumes=None, slice_sample_period=1):
         
         print('loading dataset from ' + path + '...')
@@ -62,7 +61,7 @@ class FastMRIDataset(Dataset):
         files = list(Path(path).iterdir())
         random.shuffle(files)
         files = files[0:num_volumes] if (num_volumes and num_volumes < len(files)) else files
-        print('Using ' + str(len(files)) + ' volumes')
+        print('Loading ' + str(len(files)) + ' volumes...')
       
         # gather up slices 
         for fname in files:
@@ -72,6 +71,7 @@ class FastMRIDataset(Dataset):
               (fname, slice_ind, metadata) for slice_ind in range(0,num_slices, slice_sample_period)
           ]
         print('Using ' + str(len(self.examples)) + ' total slices')
+        random.shuffle(self.examples)        
 
         # create sampling mask
         mask_func = subsample.create_mask_for_mask_type( mask_info['type'], mask_info['center_fraction'], mask_info['acceleration'])
@@ -128,7 +128,6 @@ class FastMRIDataset(Dataset):
             kspace = hf["kspace"][dataslice]
 
             mask = np.asarray(hf["mask"]) if "mask" in hf else None
-
             target = hf['reconstruction_esc'][dataslice] if 'reconstruction_esc' in hf else None
 
             attrs = dict(hf.attrs)
@@ -145,8 +144,8 @@ class FastMRIDataset(Dataset):
 
 if __name__ == "__main__":
   random.seed(1)
-  path = '/clusterfs/abc/amit/fastmri/knee/singlecoil_val/'
+  path = '/clusterfs/abc/amit/fastmri/knee/singlecoil_train/'
   mask_info = {'type': 'equispaced', 'center_fraction' : [0.08], 'acceleration' : [4]}
   dataset = FastMRIDataset(path, normalize='per_image', mask_info=mask_info)
-  #loader = DataLoader(dataset, batch_size=5, shuffle=True)
+  loader = DataLoader(dataset, batch_size=5, shuffle=True)
   pdb.set_trace()

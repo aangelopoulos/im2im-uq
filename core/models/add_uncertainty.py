@@ -8,7 +8,7 @@ from core.models.finallayers.residual_magnitude_layer import ResidualMagnitudeLa
 from core.models.finallayers.softmax_layer import SoftmaxLayer, softmax_loss_fn, softmax_nested_sets_from_output
 from core.models.trunks.wnet import WNet
 from core.models.trunks.unet import UNet
-import jsons
+import json
 
 class ModelWithUncertainty(nn.Module):
   def __init__(self, baseModel, last_layer, in_train_loss_fn, in_nested_sets_from_output_fn, params):

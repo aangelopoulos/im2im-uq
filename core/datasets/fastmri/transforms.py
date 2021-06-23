@@ -11,6 +11,7 @@ sys.path.insert(1, os.path.join(sys.path[0], '../../../'))
 import core.datasets.fastmri as fastmri
 import numpy as np
 import torch
+import pdb
 
 from core.datasets.fastmri.subsample import MaskFunc
 
@@ -287,7 +288,6 @@ class UnetDataTransform:
             masked_kspace, mask = apply_mask(kspace, self.mask_func, seed)
         else:
             masked_kspace = kspace
-
         # inverse Fourier transform to get zero filled solution
         image = fastmri.ifft2c(masked_kspace)
 
