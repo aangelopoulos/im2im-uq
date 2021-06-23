@@ -9,9 +9,10 @@ import torchvision.transforms as T
 import yaml
 
 from core.scripts.train import train_net
-from core.scripts.eval import eval_net, eval_risk_size 
+from core.scripts.eval import get_images, eval_net, eval_set_metrics 
 from core.models.add_uncertainty import add_uncertainty
 from core.calibration.calibrate_model import calibrate_model
+from core.utils import fix_randomness 
 
 # Models
 from core.models.trunks.unet import UNet
@@ -21,7 +22,13 @@ from core.datasets.CAREDrosophila import CAREDrosophilaDataset
 
 if __name__ == "__main__":
   wandb.init() 
+  curr_method = wandb.config["uncertainty_type"]
   curr_lr = wandb.config["lr"]
+  wandb.run.name = f"{curr_method}, lr={curr_lr}"
+  wandb.run.save()
+
+  # Fix the randomness
+  fix_randomness()
 
   # DATASET LOADING
   if wandb.config["dataset"] == "CIFAR10":
@@ -66,13 +73,31 @@ if __name__ == "__main__":
 
   print("Done training!")
   model.eval()
-  val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False, num_workers=0)
-  val_loss = eval_net(model,val_loader,wandb.config['device'])
-  print(f"Done validating! Validation Loss: {val_loss}")
-  model = calibrate_model(model, calib_dataset, params)
-  print(f"Model calibrated! lambda hat = {model.lhat}")
-  risk, sizes = eval_risk_size(model, val_dataset, params)
-  print(f"Risk: {risk}  |  Mean size: {sizes.mean()}")
-  wandb.log({"risk": risk, "mean_size":sizes.mean()})
+  with torch.no_grad():
+    #val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False, num_workers=0)
+    #val_loss = eval_net(model,val_loader,wandb.config['device'])
+    #print(f"Done validating! Validation Loss: {val_loss}")
+    model = calibrate_model(model, calib_dataset, params)
+    print(f"Model calibrated! lambda hat = {model.lhat}")
+    # Get the prediction sets and properly organize them 
+    examples_input, examples_lower_edge, examples_prediction, examples_upper_edge, examples_ground_truth = get_images(model,
+                                                                                                                      val_dataset,
+                                                                                                                      wandb.config['device'],
+                                                                                                                      list(range(5,10)))
+    # Log everything
+    wandb.log({"epoch": wandb.config['epochs']+1, "examples_input": examples_input})
+    wandb.log({"epoch": wandb.config['epochs']+1, "Lower edge": examples_lower_edge})
+    wandb.log({"epoch": wandb.config['epochs']+1, "Predictions": examples_prediction})
+    wandb.log({"epoch": wandb.config['epochs']+1, "Upper edge": examples_upper_edge})
+    wandb.log({"epoch": wandb.config['epochs']+1, "Ground truth": examples_ground_truth})
+    # Get the risk and set size
+    risk, sizes, spearman, stratified_risk = eval_set_metrics(model, val_dataset, params)
 
-  print(f"Done with {str(params)}")
+    data = [[label, val] for (label, val) in zip(["Easy","Easy-medium", "Medium-Hard", "Hard"], stratified_risk.numpy())]
+    table = wandb.Table(data=data, columns = ["Difficulty", "Empirical Risk"])
+    wandb.log({"Size-Stratified Risk Barplot" : wandb.plot.bar(table, "Difficulty","Empirical Risk", title="Size-Stratified Risk") })
+
+    print(f"Risk: {risk}  |  Mean size: {sizes.mean()}  |  Spearman: {spearman}  |  Size-stratified risk: {stratified_risk}  ")
+    wandb.log({"epoch": wandb.config['epochs']+1, "risk": risk, "mean_size":sizes.mean(), "Spearman":spearman, "Size-Stratified Risk":stratified_risk})
+
+    print(f"Done with {str(params)}")

@@ -4,7 +4,7 @@ output_dir: "tests/test_add_uncertainty/outputs/"
 dataset: "CAREDrosophila"
 data_split_percentages: [0.8, 0.1, 0.1]
 model: "UNet"
-uncertainty_type: "softmax"
+uncertainty_type: "quantiles"
 alpha: 0.1
 delta: 0.1
 num_lambdas: 100
@@ -13,7 +13,10 @@ q_lo: 0.05
 q_hi: 0.95
 q_lo_weight: 1
 q_hi_weight: 1
-maximum_lambda: 1 
+minimum_lambda: 0 
+maximum_lambda: 6 
+minimum_lambda_softmax: 0.99 
+maximum_lambda_softmax: 0.998 
 mse_weight: 1
 device: "cuda"
 epochs: 1 

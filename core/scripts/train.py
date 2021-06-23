@@ -11,18 +11,12 @@ import torch.nn as nn
 from torch import optim
 from tqdm import tqdm
 
-from core.scripts.eval import eval_net
+from core.scripts.eval import get_images, eval_net
 
 from torch.utils.data import DataLoader, random_split
 import core.utils as utils
 import pdb
 import dill as pkl
-
-def transform_output(x):
-  x = np.maximum(0,np.minimum(255*x.cpu().squeeze(), 255))
-  if len(x.shape) == 3:
-    x = x.permute(1,2,0)
-  return x.numpy().astype(np.uint8)
 
 def run_validation(net,
                    val_loader,
@@ -36,18 +30,17 @@ def run_validation(net,
     wandb.log({"epoch": epoch, "iter":global_step, "val_loss":val_loss})
     # Plot images 
     try:
-      # First log the input images
-      wandb.log({"epoch": epoch, "iter":global_step, "examples_input": [wandb.Image(transform_output(val_dataset[img_idx][0])) for img_idx in range(5)]})
       # Get the prediction sets and properly organize them 
-      examples_output = [net.nested_sets((val_dataset[img_idx][0].unsqueeze(0).to(device),),lam=1.0) for img_idx in range(5)]
-      examples_lower_edge = [wandb.Image(transform_output(example[0])) for example in examples_output]
-      examples_prediction = [wandb.Image(transform_output(example[1])) for example in examples_output]
-      examples_upper_edge = [wandb.Image(transform_output(example[2])) for example in examples_output]
+      examples_input, examples_lower_edge, examples_prediction, examples_upper_edge, examples_ground_truth = get_images(net,
+                                                                                                                        val_dataset,
+                                                                                                                        device,
+                                                                                                                        list(range(5)))
       # Log everything
+      wandb.log({"epoch": epoch, "iter":global_step, "examples_input": examples_input})
       wandb.log({"epoch": epoch, "iter":global_step, "Lower edge": examples_lower_edge})
       wandb.log({"epoch": epoch, "iter":global_step, "Predictions": examples_prediction})
       wandb.log({"epoch": epoch, "iter":global_step, "Upper edge": examples_upper_edge})
-      wandb.log({"epoch": epoch, "iter":global_step, "Ground truth": [wandb.Image(transform_output(val_dataset[img_idx][1])) for img_idx in range(5)]})
+      wandb.log({"epoch": epoch, "iter":global_step, "Ground truth": examples_ground_truth})
     except:
       print("Failed logging images.")
   net.train()

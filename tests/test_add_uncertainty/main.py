@@ -10,7 +10,7 @@ from core.utils import fix_randomness
 import numpy as np
 from torch.utils.data import Dataset, DataLoader, random_split
 from core.scripts.train import train_net
-from core.scripts.eval import eval_net, eval_risk_size
+from core.scripts.eval import get_images, eval_net, eval_set_metrics
 import yaml
 import pdb
 
@@ -42,12 +42,23 @@ if __name__ == "__main__":
                       config['validate_every'],
                       config)   
     model.eval()
-    val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False, num_workers=0)
+    #val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False, num_workers=0)
     #val_loss = eval_net(model,val_loader,config['device'])
     #print(f"Done validating! Validation Loss: {val_loss}")
-    torch.cuda.empty_cache()
     model = calibrate_model(model, calib_dataset, config)
     print(f"Model calibrated! lambda hat = {model.lhat}")
-    torch.cuda.empty_cache()
-    risk, sizes = eval_risk_size(model, val_dataset, config)
-    print(f"Risk: {risk}  |  Mean size: {sizes.mean()}")
+    # Get the prediction sets and properly organize them 
+    examples_input, examples_lower_edge, examples_prediction, examples_upper_edge, examples_ground_truth = get_images(model,
+                                                                                                                      val_dataset,
+                                                                                                                      config['device'],
+                                                                                                                      list(range(5)))
+    # Log everything
+    wandb.log({"epoch": config['epochs']+1, "examples_input": examples_input})
+    wandb.log({"epoch": config['epochs']+1, "Lower edge": examples_lower_edge})
+    wandb.log({"epoch": config['epochs']+1, "Predictions": examples_prediction})
+    wandb.log({"epoch": config['epochs']+1, "Upper edge": examples_upper_edge})
+    wandb.log({"epoch": config['epochs']+1, "Ground truth": examples_ground_truth})
+    # Evaluate the risk and size
+    risk, sizes, spearman, stratified_risk = eval_set_metrics(model, val_dataset, config)
+    print(f"Risk: {risk}  |  Mean size: {sizes.mean()}  |  Spearman: {spearman}  |  stratified risk: {stratified_risk}  ")
+    wandb.log({"risk": risk, "mean_size":sizes.mean(), "Spearman":spearman, "Size-Stratified Risk":stratified_risk})

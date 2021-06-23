@@ -37,13 +37,12 @@ def softmax_nested_sets_from_output(model, output, lam=None):
     vals, idxs = output.sort(dim=1,descending=True)
     torch.cumsum(vals,dim=1,out=vals)
     idxs[vals > lam] = -num_softmax
-    lower_edge = idxs.abs().min(dim=1,keepdim=True)[0]/num_softmax
+    lower_edge = idxs.abs().min(dim=1)[0]/num_softmax
     prediction = torch.argmax(output, dim=1)/num_softmax
-    upper_edge = idxs.max(dim=1,keepdim=True)[0]/num_softmax
+    upper_edge = idxs.max(dim=1)[0]/num_softmax
 
     upper_edge = torch.maximum(upper_edge, prediction + 1e-6) # set a lower bound on the size.
     lower_edge = torch.minimum(lower_edge, prediction - 1e-6)
-    torch.cuda.empty_cache()
     upper_edge[upper_edge > 1] = 1.0
     lower_edge[lower_edge < 0] = 0.0
     return lower_edge, prediction, upper_edge 
