@@ -14,8 +14,13 @@ def eval_risk_size(model, dataset, config):
     device = config['device']
     rcps_loss_fn = get_rcps_loss_fn(config)
     model = model.to(device)
-    outputs = torch.cat([model(x[0].unsqueeze(0).to(device)) for x in dataset], dim=0)
     labels = torch.cat([x[1].unsqueeze(0).to(device) for x in dataset], dim=0)
+    outputs_shape = list(model(dataset[0][0].unsqueeze(0).to(device)).shape)
+    outputs_shape[0] = len(dataset)
+    outputs = torch.zeros(tuple(outputs_shape),device=device)
+    for i in range(len(dataset)):
+      torch.cuda.empty_cache()
+      outputs[i,:,:,:,:] = model(dataset[i][0].unsqueeze(0).to(device))
     out_dataset = TensorDataset(outputs,labels)
     losses, sizes = get_rcps_losses_and_sizes_from_outputs(model, out_dataset, rcps_loss_fn, device)
     return losses.mean(), sizes

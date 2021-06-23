@@ -60,12 +60,12 @@ def calibrate_model(model, dataset, config):
     rcps_loss_fn = get_rcps_loss_fn(config)
     model = model.to(device)
     labels = torch.cat([x[1].unsqueeze(0).to(device) for x in dataset], dim=0)
-    outputs = []
+    outputs_shape = list(model(dataset[0][0].unsqueeze(0).to(device)).shape)
+    outputs_shape[0] = len(dataset)
+    outputs = torch.zeros(tuple(outputs_shape),device=device)
     for i in range(len(dataset)):
-      x = dataset[i][0].unsqueeze(0).to(device)
-      x = model(x)
-      outputs = outputs + [x,]
-    outputs = torch.cat(outputs, dim=0)
+      torch.cuda.empty_cache()
+      outputs[i,:,:,:,:] = model(dataset[i][0].unsqueeze(0).to(device))
     out_dataset = TensorDataset(outputs,labels)
     print("Calibrating...")
     for lam in reversed(lambdas):

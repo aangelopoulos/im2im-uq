@@ -1,5 +1,6 @@
 import os,sys,inspect
 sys.path.insert(1, os.path.join(sys.path[0], '../../'))
+import torch
 from core.datasets.CAREDrosophila import CAREDrosophilaDataset
 from core.models.trunks.unet import UNet
 from core.models.trunks.wnet import WNet
@@ -42,10 +43,11 @@ if __name__ == "__main__":
                       config)   
     model.eval()
     val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False, num_workers=0)
-    val_loss = eval_net(model,val_loader,config['device'])
-    print(f"Done validating! Validation Loss: {val_loss}")
+    #val_loss = eval_net(model,val_loader,config['device'])
+    #print(f"Done validating! Validation Loss: {val_loss}")
+    torch.cuda.empty_cache()
     model = calibrate_model(model, calib_dataset, config)
     print(f"Model calibrated! lambda hat = {model.lhat}")
-    pdb.set_trace()
+    torch.cuda.empty_cache()
     risk, sizes = eval_risk_size(model, val_dataset, config)
     print(f"Risk: {risk}  |  Mean size: {sizes.mean()}")
