@@ -14,14 +14,13 @@ q_hi: 0.95
 q_lo_weight: 1
 q_hi_weight: 1
 minimum_lambda: 0 
-maximum_lambda: 6 
+maximum_lambda: 12 
 minimum_lambda_softmax: 0.99 
 maximum_lambda_softmax: 0.998 
 mse_weight: 1
 device: "cuda:0"
-train_parallel: True
 device_ids: [0,1]
-epochs: 20 
+epochs: 2 
 batch_size: 78 
 lr: 0.0001
 load_from_checkpoint: True

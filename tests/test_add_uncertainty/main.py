@@ -11,7 +11,7 @@ from core.calibration.calibrate_model import calibrate_model
 from core.utils import fix_randomness 
 import numpy as np
 from torch.utils.data import Dataset, DataLoader, random_split
-from core.scripts.train import train_net, train_net_ddp
+from core.scripts.train import train_net
 from core.scripts.eval import get_images, eval_net, eval_set_metrics
 import yaml
 import pdb
@@ -34,7 +34,7 @@ if __name__ == "__main__":
     lengths = np.round(len(dataset)*np.array(config["data_split_percentages"])).astype(int)
     lengths[-1] = len(dataset)-(lengths.sum()-lengths[-1])
     train_dataset, calib_dataset, val_dataset, _ = random_split(dataset, lengths.tolist())
-    model = train_net_ddp(model,
+    model = train_net(model,
                       train_dataset,
                       val_dataset,
                       config['device'],

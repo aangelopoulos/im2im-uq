@@ -88,7 +88,8 @@ def calibrate_model(model, dataset, config):
       RhatPlus = HB_mu_plus(Rhat.item(), losses.shape[0], delta)
       print(f"\rLambda: {lam:.4f}  |  Rhat: {Rhat:.4f}  |  RhatPlus: {RhatPlus:.4f}  ",end='')
       if Rhat >= alpha or RhatPlus > alpha:
-        model.lhat = lam
+        model.set_lhat(lam)
         print("")
+        print(f"Model's lhat set to {model.lhat}")
         break
     return model 

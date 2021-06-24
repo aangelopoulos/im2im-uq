@@ -19,32 +19,7 @@ import core.utils as utils
 import pdb
 import dill as pkl
 
-# Code for DistributedDataParallelism
-import torch.distributed as dist
-import torch.nn as nn
-import torch.optim as optim
-import torch.multiprocessing as mp
-
-from torch.nn.parallel import DistributedDataParallel as DDP
-
-def setup(rank, world_size):
-  os.environ['MASTER_ADDR'] = 'localhost'
-  os.environ['MASTER_PORT'] = '12355'
-
-# initialize the process group
-  dist.init_process_group("gloo", rank=rank, world_size=world_size)
-
-def cleanup():
-  dist.destroy_process_group()
-
-class DDPPassthrough(DDP):
-  def __getattr__(self, name):
-    try:
-      return super().__getattr__(name)
-    except AttributeError:
-      return getattr(self.module, name)
-
-class DataParallelPassthrough(torch.nn.DataParallel):
+class DataParallelPassthrough(nn.DataParallel):
   def __getattr__(self, name):
     try:
       return super().__getattr__(name)
@@ -78,60 +53,6 @@ def run_validation(net,
       print("Failed logging images.")
   net.train()
 
-def train_net_ddp(net,
-                  train_dataset,
-                  val_dataset,
-                  device,
-                  epochs,
-                  batch_size,
-                  lr,
-                  load_from_checkpoint,
-                  checkpoint_dir,
-                  checkpoint_every,
-                  validate_every,
-                  config=None): # config not normally needed due to wandb
-  world_size = len(config['device_ids'])
-  net = net.to(device=device)
-  args = (world_size, net, train_dataset, val_dataset, device, epochs, batch_size, lr, load_from_checkpoint, checkpoint_dir, checkpoint_every, validate_every, config)
-  mp.spawn(train_net_wrapper,
-           args=args,
-           nprocs=world_size,
-           join=True)
-  return net 
-
-def train_net_wrapper(rank,
-                      world_size,
-                      net,
-                      train_dataset,
-                      val_dataset,
-                      device,
-                      epochs,
-                      batch_size,
-                      lr,
-                      load_from_checkpoint,
-                      checkpoint_dir,
-                      checkpoint_every,
-                      validate_every,
-                      config=None): # config not normally needed due to wandb
-    print(f"Rank: {rank}")
-    setup(rank, world_size)
-    wandb.init(config=config)
-    net = train_net(net,
-                    train_dataset,
-                    val_dataset,
-                    device,
-                    epochs,
-                    batch_size,
-                    lr,
-                    load_from_checkpoint,
-                    checkpoint_dir,
-                    checkpoint_every,
-                    validate_every,
-                    config,
-                    rank)
-    cleanup()
-    return net
-
 def train_net(net,
               train_dataset,
               val_dataset,
@@ -143,11 +64,9 @@ def train_net(net,
               checkpoint_dir,
               checkpoint_every,
               validate_every,
-              config=None,
-              rank=0): # config not normally needed due to wandb
+              config=None): # config not normally needed due to wandb
 
     # MODEL LOADING CODE
-    print(f"Training on device {device}")
     starting_epoch = 0 # will change if loading from checkpoint
     if config == None:
       config = wandb.config
@@ -171,27 +90,24 @@ def train_net(net,
             starting_epoch = e
             print(f"Starting from epoch {e}.")
             break
-    if config['train_parallel']:
-      net = DDPPassthrough(net, device_ids=[rank])
-      device = rank
     
     # Otherwise, train the model
     global_step = 0
 
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=0)
     val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
-    #net = net.to(device=device)
-    #if torch.cuda.device_count() > 1:
-    #  print("Let's use", torch.cuda.device_count(), "GPUs!")
-    #  # dim = 0 [30, xxx] -> [10, ...], [10, ...], [10, ...] on 3 GPUs
-    #  net = DataParallelPassthrough(net, device_ids=config['device_ids'])
+    net = net.to(device=device)
+    if torch.cuda.device_count() > 1:
+      print("Let's use", torch.cuda.device_count(), "GPUs!")
+      # dim = 0 [30, xxx] -> [10, ...], [10, ...], [10, ...] on 3 GPUs
+      net = DataParallelPassthrough(net, device_ids=config['device_ids'])
 
     net=net.to(device=device)
 
     optimizer = optim.Adam(net.parameters(), lr=lr)
 
     # WandB magic
-    if starting_epoch == 0 and (device=='cuda' or device=='cuda:0' or device=='0'):
+    if starting_epoch == 0:
       try:
         wandb.watch(net, log_freq = 100)
       except:
@@ -252,9 +168,8 @@ def train_net(net,
                   except OSError:
                       pass
                   checkpoint_fname = checkpoint_dir + f'/CP_epoch{epoch + 1}_' + config['dataset'] + "_" + config['uncertainty_type'] + "_" + str(config['batch_size']) + "_" + str(config['lr']).replace('.','_') + '.pth'
-                  torch.save(net, checkpoint_fname)
+                  torch.save(net.module, checkpoint_fname)
 
                   logging.info(f'Checkpoint {epoch + 1} saved !')
-        net.load_state_dict(net.state_dict())
         net.eval()
-    return net
+    return net.module

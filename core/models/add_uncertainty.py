@@ -38,6 +38,9 @@ class ModelWithUncertainty(nn.Module):
     output = self(*x)
     return self.nested_sets_from_output(output, lam=lam)
 
+  def set_lhat(self,lhat):
+    self.lhat = lhat
+
 def add_uncertainty(model, params): 
   base_model_type = None
   last_layer = None
