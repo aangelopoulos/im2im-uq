@@ -41,7 +41,7 @@ parameters:
   batch_size:
     value: 32
   lr:
-    value: 0.0001
+    values: [0.001, 0.0001]
   load_from_checkpoint: 
     value: True
   checkpoint_dir:
