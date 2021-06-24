@@ -19,12 +19,14 @@ from core.models.trunks.unet import UNet
 
 # Datasets
 from core.datasets.CAREDrosophila import CAREDrosophilaDataset
+from core.datasets.fastmri import FastMRIDataset
 
 if __name__ == "__main__":
   wandb.init() 
   curr_method = wandb.config["uncertainty_type"]
   curr_lr = wandb.config["lr"]
-  wandb.run.name = f"{curr_method}, lr={curr_lr}"
+  curr_dataset = wandb.config["dataset"]
+  wandb.run.name = f"{curr_method}, {curr_dataset}, lr={curr_lr}"
   wandb.run.save()
 
   # Fix the randomness
@@ -36,9 +38,13 @@ if __name__ == "__main__":
                                      std=[0.229, 0.224, 0.225])
     transform = T.Compose([ T.Resize(256), T.CenterCrop(224), T.ToTensor(), normalize ])
     dataset = torchvision.datasets.CIFAR10('/clusterfs/abc/angelopoulos/CIFAR10', download=True, transform=transform)
-  if wandb.config["dataset"] == "CAREDrosophila":
+  elif wandb.config["dataset"] == "CAREDrosophila":
     path = '/clusterfs/abc/angelopoulos/care/Isotropic_Drosophila/train_data/data_label.npz'
     dataset = CAREDrosophilaDataset(path, num_instances='all', normalize='min-max')
+  elif wandb.config["dataset"] = "fastmri":
+    path = '/clusterfs/abc/amit/fastmri/knee/singlecoil_train/'
+    mask_info = {'type': 'equispaced', 'center_fraction' : [0.08], 'acceleration' : [4]}
+    dataset = FastMRIDataset(path, normalize='per_image', mask_info=mask_info)
   else:
     raise NotImplementedError 
 

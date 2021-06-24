@@ -63,6 +63,7 @@ def get_rcps_loss_fn(config):
 
 def calibrate_model(model, dataset, config):
   with torch.no_grad():
+    print(f"Calibrating...")
     model.eval()
     alpha = config['alpha']
     delta = config['delta']
@@ -80,7 +81,6 @@ def calibrate_model(model, dataset, config):
     for i in range(len(dataset)):
       outputs[i,:,:,:,:] = model(dataset[i][0].unsqueeze(0).to(device))
     out_dataset = TensorDataset(outputs,labels)
-    print(f"Calibrating...")
     dlambda = lambdas[1]-lambdas[0]
     for lam in reversed(lambdas):
       losses = get_rcps_losses_from_outputs(model, out_dataset, rcps_loss_fn, lam-dlambda, device)

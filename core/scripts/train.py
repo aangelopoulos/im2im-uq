@@ -58,6 +58,7 @@ def train_net(net,
               validate_every,
               config=None): # config not normally needed due to wandb
 
+    starting_epoch = 0 # will change if loading from checkpoint
     if config == None:
       config = wandb.config
     # If we're loading from a checkpoint, do so.
@@ -70,7 +71,16 @@ def train_net(net,
           print(f"Model loaded from checkpoint {checkpoint_final_path}")
           return net
         except:
-          print(f"Model cannot be loaded from checkpoint. Training now, for {epochs} epochs.")
+          print(f"Final model cannot be loaded from checkpoint. Training now, for {epochs} epochs.")
+      else:
+        print(f"Final model cannot be loaded from checkpoint. Training now, for {epochs} epochs.")
+        for e in reversed(range(epochs)):
+          checkpoint_intermediate_path = checkpoint_dir + f'/CP_epoch{e}_' + config['dataset'] + "_" + config['uncertainty_type'] + "_" + str(config['batch_size']) + "_" + str(config['lr']).replace('.','_') + '.pth'
+          if os.path.exists(checkpoint_intermediate_path):
+            net = torch.load(checkpoint_intermediate_path)
+            starting_epoch = e
+            print(f"Starting from epoch {e}.")
+            break
     
     # Otherwise, train the model
     global_step = 0
@@ -82,11 +92,12 @@ def train_net(net,
     optimizer = optim.Adam(net.parameters(), lr=lr)
 
     # WandB magic
-    try:
-      wandb.watch(net, log_freq = 100)
-    except:
-      wandb.init(config=config)
-      wandb.watch(net, log_freq = 100)
+    if starting_epoch == 0:
+      try:
+        wandb.watch(net, log_freq = 100)
+      except:
+        wandb.init(config=config)
+        wandb.watch(net, log_freq = 100)
 
     run_validation(net,
                    val_loader,
@@ -95,7 +106,7 @@ def train_net(net,
                    global_step,
                    0)
 
-    for epoch in range(epochs):
+    for epoch in range(starting_epoch,epochs):
         net.train()
         print('epoch ' + str(epoch+1) + '\n')
         epoch_loss = 0

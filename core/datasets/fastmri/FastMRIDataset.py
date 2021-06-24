@@ -138,7 +138,7 @@ class FastMRIDataset(Dataset):
         else:
             sample = self.transform(kspace, mask, target, attrs, fname.name, dataslice)
 
-        return (sample[0], sample[1])
+        return (sample[0].unsqueeze(0), sample[1].unsqueeze(0))
 
     
 
