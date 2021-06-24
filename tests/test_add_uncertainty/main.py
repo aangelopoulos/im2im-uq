@@ -1,6 +1,7 @@
 import os,sys,inspect
 sys.path.insert(1, os.path.join(sys.path[0], '../../'))
 import torch
+import torch.nn as nn
 from core.datasets.CAREDrosophila import CAREDrosophilaDataset
 from core.datasets.fastmri import FastMRIDataset
 from core.models.trunks.unet import UNet

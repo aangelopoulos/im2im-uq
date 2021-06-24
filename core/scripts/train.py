@@ -1,6 +1,7 @@
 import os,sys,inspect
 sys.path.insert(1, os.path.join(sys.path[0], '../../'))
 import argparse
+import copy
 import logging
 import wandb
 
@@ -17,6 +18,31 @@ from torch.utils.data import DataLoader, random_split
 import core.utils as utils
 import pdb
 import dill as pkl
+
+# Code for DistributedDataParallelism
+import torch.distributed as dist
+import torch.nn as nn
+import torch.optim as optim
+import torch.multiprocessing as mp
+
+from torch.nn.parallel import DistributedDataParallel as DDP
+
+def setup(rank, world_size):
+  os.environ['MASTER_ADDR'] = 'localhost'
+  os.environ['MASTER_PORT'] = '12355'
+
+# initialize the process group
+  dist.init_process_group("gloo", rank=rank, world_size=world_size)
+
+def cleanup():
+  dist.destroy_process_group()
+
+class DataParallelPassthrough(torch.nn.DataParallel):
+  def __getattr__(self, name):
+    try:
+      return super().__getattr__(name)
+    except AttributeError:
+      return getattr(self.module, name)
 
 def run_validation(net,
                    val_loader,
@@ -45,6 +71,54 @@ def run_validation(net,
       print("Failed logging images.")
   net.train()
 
+def train_net_distributed(world_size,
+                          net,
+                          train_dataset,
+                          val_dataset,
+                          epochs,
+                          batch_size,
+                          lr,
+                          load_from_checkpoint,
+                          checkpoint_dir,
+                          checkpoint_every,
+                          validate_every,
+                          config=None): # config not normally needed due to wandb
+  args = ()
+  raise NotImplementedError
+            
+
+def train_net_wrapper(rank,
+                      world_size,
+                      net,
+                      train_dataset,
+                      val_dataset,
+                      epochs,
+                      batch_size,
+                      lr,
+                      load_from_checkpoint,
+                      checkpoint_dir,
+                      checkpoint_every,
+                      validate_every,
+                      config=None): # config not normally needed due to wandb
+    print(f"Rank: {rank}")
+    setup(rank, world_size)
+    net = net.to(rank)
+    ddp_net = DDP(net, device_ids=[rank])
+    ddp_net = train_net(ddp_net,
+                        train_dataset,
+                        val_dataset,
+                        rank,
+                        epochs,
+                        batch_size,
+                        lr,
+                        load_from_checkpoint,
+                        checkpoint_dir,
+                        checkpoint_every,
+                        validate_every,
+                        config=None)
+    cleanup()
+    return ddp_net
+
 def train_net(net,
               train_dataset,
               val_dataset,
@@ -58,6 +132,7 @@ def train_net(net,
               validate_every,
               config=None): # config not normally needed due to wandb
 
+    # MODEL LOADING CODE
     starting_epoch = 0 # will change if loading from checkpoint
     if config == None:
       config = wandb.config
@@ -87,7 +162,13 @@ def train_net(net,
 
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=0)
     val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
-    net.to(device=device)
+    net = net.to(device=device)
+    if torch.cuda.device_count() > 1:
+      print("Let's use", torch.cuda.device_count(), "GPUs!")
+      # dim = 0 [30, xxx] -> [10, ...], [10, ...], [10, ...] on 3 GPUs
+      net = DataParallelPassthrough(net, device_ids=[0,1])
+
+    net=net.to(device=device)
 
     optimizer = optim.Adam(net.parameters(), lr=lr)
 
@@ -132,6 +213,7 @@ def train_net(net,
         wandb.log({"iter":global_step, "train_loss":epoch_loss/len(train_loader)})
 
         with torch.no_grad():
+          net.load_state_dict(net.state_dict())
 
           if (epoch) % validate_every == 0:
               # validation
@@ -155,5 +237,6 @@ def train_net(net,
                   torch.save(net, checkpoint_fname)
 
                   logging.info(f'Checkpoint {epoch + 1} saved !')
+        net.load_state_dict(net.state_dict())
         net.eval()
     return net
