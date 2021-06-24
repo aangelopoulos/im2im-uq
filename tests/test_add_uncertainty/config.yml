@@ -19,6 +19,8 @@ minimum_lambda_softmax: 0.99
 maximum_lambda_softmax: 0.998 
 mse_weight: 1
 device: "cuda:0"
+train_parallel: True
+device_ids: [0,1]
 epochs: 20 
 batch_size: 78 
 lr: 0.0001
