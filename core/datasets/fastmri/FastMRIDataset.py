@@ -48,12 +48,16 @@ def et_query(
 
 
 class FastMRIDataset(Dataset):
-    def __init__(self, path, normalize, mask_info, num_volumes=None, slice_sample_period=1):
+    def __init__(self, path, normalize_input, normalize_output, mask_info, num_volumes=None, slice_sample_period=1):
         
         print('loading dataset from ' + path + '...')
+        self.challenge = path.split('/')[-2].split('_')[0]
+        self.recons_key = (
+            "reconstruction_esc" if self.challenge == "singlecoil" else "reconstruction_rss"
+        )
         
-        self.cach_path = os.path.join(path, '.cache/')
-        
+        self.cache_path = os.path.join(path, '.cache/')
+        os.makedirs(self.cache_path, exist_ok=True) 
         # load the dataset as a list of filenames
         self.examples = []
         
@@ -76,13 +80,11 @@ class FastMRIDataset(Dataset):
         # create sampling mask
         mask_func = subsample.create_mask_for_mask_type( mask_info['type'], mask_info['center_fraction'], mask_info['acceleration'])
 
-        # create a data transform including k-space subsampling mask and normalizationi
-        self.transform = transforms.UnetDataTransform('singlecoil', mask_func=mask_func, use_seed=False)
-        #if normalize:
-        #  print('normalizing via ' + normalize + ' normalization ...')
-        #  self.x, self.params = utils.normalize(self.x, type=normalize, per_pixel=False, input_output='input')
-        #  self.y, params_y = utils.normalize(self.y, type=normalize, per_pixel=False, input_output='output')
-        #  self.params.update(params_y)
+        # create a data transform including k-space subsampling mask and normalization
+        self.transform = transforms.UnetDataTransform(self.challenge, mask_func=mask_func, use_seed=False)
+
+        self.normalize_input = normalize_input
+        self.normalize_output = normalize_output
 
     def _retrieve_metadata(self, fname):
         with h5py.File(fname, "r") as hf:
@@ -128,7 +130,7 @@ class FastMRIDataset(Dataset):
             kspace = hf["kspace"][dataslice]
 
             mask = np.asarray(hf["mask"]) if "mask" in hf else None
-            target = hf['reconstruction_esc'][dataslice] if 'reconstruction_esc' in hf else None
+            target = hf[self.recons_key][dataslice] if self.recons_key in hf else None
 
             attrs = dict(hf.attrs)
             attrs.update(metadata)
@@ -138,7 +140,22 @@ class FastMRIDataset(Dataset):
         else:
             sample = self.transform(kspace, mask, target, attrs, fname.name, dataslice)
 
-        return (sample[0].unsqueeze(0), sample[1].unsqueeze(0))
+        if self.normalize_input == 'standard':
+          input_img = (sample[0] - self.norm_params['input_mean'])/self.norm_params['input_std']
+        elif self.normalize_input == 'min-max':
+          input_img = (sample[0] - self.norm_params['input_min'])/self.norm_params['input_max']
+        else:
+          input_img = sample[0]
+
+        if self.normalize_output == 'standard':
+          output_img = (sample[1] - self.norm_params['output_mean'])/self.norm_params['output_std']
+        elif self.normalize_output == 'min-max':
+          output_img = (sample[1] - self.norm_params['output_min'])/self.norm_params['output_max']
+        else:
+          output_img = sample[1]
+        
+
+        return (input_img.unsqueeze(0), output_img.unsqueeze(0))
 
     
 
@@ -146,6 +163,7 @@ if __name__ == "__main__":
   random.seed(1)
   path = '/clusterfs/abc/amit/fastmri/knee/singlecoil_train/'
   mask_info = {'type': 'equispaced', 'center_fraction' : [0.08], 'acceleration' : [4]}
-  dataset = FastMRIDataset(path, normalize='per_image', mask_info=mask_info)
-  loader = DataLoader(dataset, batch_size=5, shuffle=True)
+  dataset = FastMRIDataset(path, normalize_input='standard', normalize_output = 'min-max', mask_info=mask_info, num_volumes=5)
+  utils.normalize_dataset(dataset)
+  #loader = DataLoader(dataset, batch_size=5, shuffle=True)
   pdb.set_trace()

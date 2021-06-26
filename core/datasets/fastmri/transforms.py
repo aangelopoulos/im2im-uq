@@ -311,18 +311,20 @@ class UnetDataTransform:
             image = fastmri.rss(image)
 
         # normalize input
-        image, mean, std = normalize_instance(image, eps=1e-11)
-        image = image.clamp(-6, 6)
+        #image, mean, std = normalize_instance(image, eps=1e-11)
+        #image = image.clamp(-6, 6)
 
         # normalize target
         if target is not None:
             target = to_tensor(target)
             target = center_crop(target, crop_size)
-            target = normalize(target, mean, std, eps=1e-11)
-            target = target.clamp(-6, 6)
+            #target = normalize(target, mean, std, eps=1e-11)
+            #target = target.clamp(-6, 6)
         else:
             target = torch.Tensor([0])
 
+        mean = None
+        std = None
         return image, target, mean, std, fname, slice_num, max_value
 
 
