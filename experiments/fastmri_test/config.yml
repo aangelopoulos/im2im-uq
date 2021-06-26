@@ -50,7 +50,7 @@ parameters:
   checkpoint_every:
     value: 1 
   validate_every:
-    value: 5 
+    value: 3 
   q_lo:
     value: 0.05
   q_hi:

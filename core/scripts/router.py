@@ -13,6 +13,7 @@ from core.scripts.eval import get_images, eval_net, eval_set_metrics
 from core.models.add_uncertainty import add_uncertainty
 from core.calibration.calibrate_model import calibrate_model
 from core.utils import fix_randomness 
+from core.datasets.utils import normalize_dataset 
 
 # Models
 from core.models.trunks.unet import UNet
@@ -22,6 +23,9 @@ from core.datasets.CAREDrosophila import CAREDrosophilaDataset
 from core.datasets.fastmri import FastMRIDataset
 
 if __name__ == "__main__":
+  # Fix the randomness
+  fix_randomness()
+
   print("Entered main method.")
   wandb.init() 
   print("wandb init.")
@@ -30,10 +34,8 @@ if __name__ == "__main__":
   curr_dataset = wandb.config["dataset"]
   wandb.run.name = f"{curr_method}, {curr_dataset}, lr{curr_lr}"
   wandb.run.save()
+  params = { key: wandb.config[key] for key in wandb.config.keys() }
   print("wandb save run.")
-
-  # Fix the randomness
-  fix_randomness()
 
   # DATASET LOADING
   if wandb.config["dataset"] == "CIFAR10":
@@ -47,7 +49,10 @@ if __name__ == "__main__":
   elif wandb.config["dataset"] == "fastmri":
     path = '/clusterfs/abc/amit/fastmri/knee/singlecoil_train/'
     mask_info = {'type': 'equispaced', 'center_fraction' : [0.08], 'acceleration' : [4]}
-    dataset = FastMRIDataset(path, normalize='per_image', mask_info=mask_info)
+    dataset = FastMRIDataset(path, normalize_input='standard', normalize_output = 'min-max', mask_info=mask_info)
+    dataset = normalize_dataset(dataset)
+    wandb.config.update(dataset.norm_params)
+    params.update(dataset.norm_params)
   else:
     raise NotImplementedError 
 
@@ -59,7 +64,6 @@ if __name__ == "__main__":
       trunk = UNet(1,1)
 
   # ADD LAST LAYER OF MODEL
-  params = { key: wandb.config[key] for key in wandb.config.keys() }
   model = add_uncertainty(trunk, params)
 
   # DATA SPLITTING

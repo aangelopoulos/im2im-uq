@@ -102,7 +102,7 @@ def train_net(net,
       # dim = 0 [30, xxx] -> [10, ...], [10, ...], [10, ...] on 3 GPUs
       net = DataParallelPassthrough(net, device_ids=[0,1])
 
-    net=net.to(device=device)
+    net = net.to(device=device)
 
     optimizer = optim.Adam(net.parameters(), lr=lr)
 
@@ -147,7 +147,7 @@ def train_net(net,
         wandb.log({"iter":global_step, "train_loss":epoch_loss/len(train_loader)})
 
         with torch.no_grad():
-          net.load_state_dict(net.state_dict())
+          #net.load_state_dict(net.state_dict())
 
           if (epoch) % validate_every == 0:
               # validation

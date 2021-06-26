@@ -22,7 +22,11 @@ def HB_mu_plus(muhat, n, delta, maxiters=1000):
     if _tailprob(1-1e-10) > 0:
         return 1
     else:
-        return brentq(_tailprob, muhat, 1-1e-10, maxiter=maxiters)
+        try:
+          return brentq(_tailprob, muhat, 1-1e-10, maxiter=maxiters)
+        except:
+          print(f"BRENTQ RUNTIME ERROR at muhat={muhat}") 
+          return 1.0
 
 def WSR_mu_plus(x, delta, maxiters=1000): # this one is different.
     n = x.shape[0]

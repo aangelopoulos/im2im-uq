@@ -28,19 +28,19 @@ if __name__ == "__main__":
     if config["dataset"] == "CAREDrosophila":
       path = '/clusterfs/abc/angelopoulos/care/Isotropic_Drosophila/train_data/data_label.npz'
       dataset = CAREDrosophilaDataset(path, num_instances='all', normalize='min-max')
-      dataset = normalize_dataset(dataset)
+      #dataset = normalize_dataset(dataset)
     elif config["dataset"] == "fastmri":
       path = '/clusterfs/abc/amit/fastmri/knee/singlecoil_train/'
       mask_info = {'type': 'equispaced', 'center_fraction' : [0.08], 'acceleration' : [4]}
-      dataset = FastMRIDataset(path, normalize_input='standard', normalize_output = 'min-max', mask_info=mask_info, num_volumes=10)
+      dataset = FastMRIDataset(path, normalize_input='standard', normalize_output = 'min-max', mask_info=mask_info, num_volumes=300)
       dataset = normalize_dataset(dataset)
-    #config.update(dataset.norm_params)
+      config.update(dataset.norm_params)
     trunk = UNet(1,1)
     model = add_uncertainty(trunk, config)
     lengths = np.round(len(dataset)*np.array(config["data_split_percentages"])).astype(int)
     lengths[-1] = len(dataset)-(lengths.sum()-lengths[-1])
     train_dataset, calib_dataset, val_dataset, _ = random_split(dataset, lengths.tolist())
-    pdb.set_trace()
+
     model = train_net(model,
                       train_dataset,
                       val_dataset,
