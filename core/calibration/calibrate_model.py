@@ -46,6 +46,7 @@ def get_rcps_metrics_from_outputs(model, out_dataset, rcps_loss_fn, device):
   size_bins = torch.tensor([0, torch.quantile(sizes, 0.25), torch.quantile(sizes, 0.5), torch.quantile(sizes, 0.75)])
   buckets = torch.bucketize(sizes, size_bins)-1
   stratified_risks = torch.tensor([losses[buckets == bucket].mean() for bucket in range(size_bins.shape[0])])
+  print(f"Model output shape: {x.shape}, label shape: {labels.shape}, Sets shape: {sets[2].shape}, sizes: {sizes}, size_bins:{size_bins}, stratified_risks: {stratified_risks}")
   return losses, sizes, spearman, stratified_risks 
   
 def fraction_missed_loss(pset,label):
@@ -82,6 +83,7 @@ def calibrate_model(model, dataset, config):
       outputs[i,:,:,:,:] = model(dataset[i][0].unsqueeze(0).to(device))
     out_dataset = TensorDataset(outputs,labels)
     dlambda = lambdas[1]-lambdas[0]
+    model.set_lhat(lambdas[-1]+dlambda-1e-9)
     for lam in reversed(lambdas):
       losses = get_rcps_losses_from_outputs(model, out_dataset, rcps_loss_fn, lam-dlambda, device)
       Rhat = losses.mean()

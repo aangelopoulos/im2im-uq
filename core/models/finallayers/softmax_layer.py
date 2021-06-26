@@ -18,6 +18,7 @@ def softmax_loss_fn(pred, target, params):
 
   classes = torch.linspace(0,1,params["num_softmax"], device=params["device"])
   target = torch.bucketize(target,classes,right=False) 
+  target[target >= params["num_softmax"]] = params["num_softmax"]-1
 
   loss = criterion(pred,target)
 
@@ -41,8 +42,4 @@ def softmax_nested_sets_from_output(model, output, lam=None):
     prediction = torch.argmax(output, dim=1)/num_softmax
     upper_edge = idxs.max(dim=1)[0]/num_softmax
 
-    upper_edge = torch.maximum(upper_edge, prediction + 1e-6) # set a lower bound on the size.
-    lower_edge = torch.minimum(lower_edge, prediction - 1e-6)
-    upper_edge[upper_edge > 1] = 1.0
-    lower_edge[lower_edge < 0] = 0.0
     return lower_edge, prediction, upper_edge 

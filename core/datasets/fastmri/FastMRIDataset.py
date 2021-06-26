@@ -49,7 +49,9 @@ def et_query(
 
 class FastMRIDataset(Dataset):
     def __init__(self, path, normalize_input, normalize_output, mask_info, num_volumes=None, slice_sample_period=1):
-        
+        # Normalization parameters will be None at first
+        self.norm_params = None
+
         print('loading dataset from ' + path + '...')
         self.challenge = path.split('/')[-2].split('_')[0]
         self.recons_key = (
@@ -69,6 +71,8 @@ class FastMRIDataset(Dataset):
       
         # gather up slices 
         for fname in files:
+          if 'cache' in str(fname):
+            continue
           metadata, num_slices = self._retrieve_metadata(fname)
           assert(num_slices > slice_sample_period)
           self.examples += [
@@ -140,16 +144,16 @@ class FastMRIDataset(Dataset):
         else:
             sample = self.transform(kspace, mask, target, attrs, fname.name, dataslice)
 
-        if self.normalize_input == 'standard':
+        if self.normalize_input == 'standard' and self.norm_params != None:
           input_img = (sample[0] - self.norm_params['input_mean'])/self.norm_params['input_std']
-        elif self.normalize_input == 'min-max':
+        elif self.normalize_input == 'min-max' and self.norm_params != None:
           input_img = (sample[0] - self.norm_params['input_min'])/self.norm_params['input_max']
         else:
           input_img = sample[0]
 
-        if self.normalize_output == 'standard':
+        if self.normalize_output == 'standard' and self.norm_params != None:
           output_img = (sample[1] - self.norm_params['output_mean'])/self.norm_params['output_std']
-        elif self.normalize_output == 'min-max':
+        elif self.normalize_output == 'min-max' and self.norm_params != None:
           output_img = (sample[1] - self.norm_params['output_min'])/self.norm_params['output_max']
         else:
           output_img = sample[1]

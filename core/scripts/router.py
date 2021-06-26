@@ -22,12 +22,15 @@ from core.datasets.CAREDrosophila import CAREDrosophilaDataset
 from core.datasets.fastmri import FastMRIDataset
 
 if __name__ == "__main__":
+  print("Entered main method.")
   wandb.init() 
+  print("wandb init.")
   curr_method = wandb.config["uncertainty_type"]
   curr_lr = wandb.config["lr"]
   curr_dataset = wandb.config["dataset"]
-  wandb.run.name = f"{curr_method}, {curr_dataset}, lr={curr_lr}"
+  wandb.run.name = f"{curr_method}, {curr_dataset}, lr{curr_lr}"
   wandb.run.save()
+  print("wandb save run.")
 
   # Fix the randomness
   fix_randomness()
@@ -41,7 +44,7 @@ if __name__ == "__main__":
   elif wandb.config["dataset"] == "CAREDrosophila":
     path = '/clusterfs/abc/angelopoulos/care/Isotropic_Drosophila/train_data/data_label.npz'
     dataset = CAREDrosophilaDataset(path, num_instances='all', normalize='min-max')
-  elif wandb.config["dataset"] = "fastmri":
+  elif wandb.config["dataset"] == "fastmri":
     path = '/clusterfs/abc/amit/fastmri/knee/singlecoil_train/'
     mask_info = {'type': 'equispaced', 'center_fraction' : [0.08], 'acceleration' : [4]}
     dataset = FastMRIDataset(path, normalize='per_image', mask_info=mask_info)
@@ -62,7 +65,7 @@ if __name__ == "__main__":
   # DATA SPLITTING
   lengths = np.round(len(dataset)*np.array(wandb.config["data_split_percentages"])).astype(int)
   lengths[-1] = len(dataset)-(lengths.sum()-lengths[-1])
-  train_dataset, calib_dataset, val_dataset = torch.utils.data.random_split(dataset, lengths.tolist()) 
+  train_dataset, calib_dataset, val_dataset, _ = torch.utils.data.random_split(dataset, lengths.tolist()) 
   
   model = train_net(model,
                     train_dataset,

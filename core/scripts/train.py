@@ -100,7 +100,7 @@ def train_net(net,
     if torch.cuda.device_count() > 1:
       print("Let's use", torch.cuda.device_count(), "GPUs!")
       # dim = 0 [30, xxx] -> [10, ...], [10, ...], [10, ...] on 3 GPUs
-      net = DataParallelPassthrough(net, device_ids=config['device_ids'])
+      net = DataParallelPassthrough(net, device_ids=[0,1])
 
     net=net.to(device=device)
 

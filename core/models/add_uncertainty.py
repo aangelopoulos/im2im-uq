@@ -28,7 +28,15 @@ class ModelWithUncertainty(nn.Module):
     return self.in_train_loss_fn(pred,target,self.params) 
 
   def nested_sets_from_output(self, output, lam=None):
-    return self.in_nested_sets_from_output_fn(self, output, lam)
+    lower_edge, prediction, upper_edge = self.in_nested_sets_from_output_fn(self, output, lam)
+    upper_edge = torch.maximum(upper_edge, output[:,1,:,:,:] + 1e-6) # set a lower bound on the size.
+    lower_edge = torch.minimum(lower_edge, output[:,1,:,:,:] - 1e-6)
+
+    lower_edge = (lower_edge * self.params["output_max"]) + self.params["output_min"]
+    prediction = (prediction * self.params["output_max"]) + self.params["output_min"]
+    upper_edge = (upper_edge * self.params["output_max"]) + self.params["output_min"]
+
+    return lower_edge, prediction, upper_edge 
 
   def nested_sets(self, x, lam=None):
     if lam == None:
@@ -69,7 +77,7 @@ def add_uncertainty(model, params):
     nested_sets_from_output_fn = residual_magnitude_nested_sets_from_output
   elif params["uncertainty_type"] == "softmax":
     last_layer = SoftmaxLayer(model.n_channels_middle, model.n_channels_out, params) 
-    train_loss_fn = softmax_loss_fn    
+    train_loss_fn = softmax_loss_fn
     nested_sets_from_output_fn = softmax_nested_sets_from_output
   else:
     raise NotImplementedError

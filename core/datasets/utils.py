@@ -32,8 +32,6 @@ def normalize(x, type, per_pixel, input_output):
 
     return x, params
 
-
-
 def normalize_dataset(dataset):
   param_path = join(dataset.cache_path, 'norm_params.pickle')
   try:
@@ -61,9 +59,9 @@ def normalize_dataset(dataset):
       stat_in.push(data_point[0])
       stat_out.push(data_point[1])
          
-    dataset.norm_params = {'input_max': running_max_in, 'input_min': running_min_in, 'input_mean': stat_in.mean(), 
-              'input_std': np.sqrt(stat_in.variance().mean()), 'output_max': running_max_out, 'output_min': running_min_out, 
-              'output_mean': stat_out.mean(), 'output_std': np.sqrt(stat_out.variance().mean())}
+    dataset.norm_params = {'input_max': running_max_in.item(), 'input_min': running_min_in.item(), 'input_mean': stat_in.mean().item(), 
+              'input_std': np.sqrt(stat_in.variance().mean().item()), 'output_max': running_max_out.item(), 'output_min': running_min_out.item(), 
+              'output_mean': stat_out.mean().item(), 'output_std': np.sqrt(stat_out.variance().mean()).item()}
 
     with open(param_path, 'wb') as handle:
       pickle.dump(dataset.norm_params, handle, protocol=pickle.HIGHEST_PROTOCOL)

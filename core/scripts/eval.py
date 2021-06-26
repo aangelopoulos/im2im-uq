@@ -11,6 +11,8 @@ import wandb
 import pdb
 
 def transform_output(x):
+  x = x - x.min()
+  x = x/x.max() 
   x = np.maximum(0,np.minimum(255*x.cpu().squeeze(), 255))
   if len(x.shape) == 3:
     x = x.permute(1,2,0)
@@ -42,9 +44,16 @@ def eval_set_metrics(model, dataset, config):
     outputs_shape = list(model(dataset[0][0].unsqueeze(0).to(device)).shape)
     outputs_shape[0] = len(dataset)
     outputs = torch.zeros(tuple(outputs_shape),device=device)
+    print("Input")
+    print(dataset[0][0].unsqueeze(0))
+    print(dataset[0][0].unsqueeze(0).shape)
+    
     for i in range(len(dataset)):
       outputs[i,:,:,:,:] = model(dataset[i][0].unsqueeze(0).to(device))
     out_dataset = TensorDataset(outputs,labels)
+    print("Output")
+    print(out_dataset[0][0])
+    print(out_dataset[0][0].shape)
     losses, sizes, spearman, stratified_risks = get_rcps_metrics_from_outputs(model, out_dataset, rcps_loss_fn, device)
     return losses.mean(), sizes, spearman, stratified_risks
 

@@ -9,6 +9,7 @@ from core.models.trunks.wnet import WNet
 from core.models.add_uncertainty import add_uncertainty
 from core.calibration.calibrate_model import calibrate_model 
 from core.utils import fix_randomness 
+from core.datasets.utils import normalize_dataset
 import numpy as np
 from torch.utils.data import Dataset, DataLoader, random_split
 from core.scripts.train import train_net
@@ -24,16 +25,22 @@ if __name__ == "__main__":
     dir_path = os.path.dirname(os.path.realpath(__file__))
     with open(dir_path + '/config.yml') as file:
       config = yaml.safe_load(file)
-    #path = '/clusterfs/abc/angelopoulos/care/Isotropic_Drosophila/train_data/data_label.npz'
-    #dataset = CAREDrosophilaDataset(path, num_instances='all', normalize='min-max')
-    path = '/clusterfs/abc/amit/fastmri/knee/singlecoil_train/'
-    mask_info = {'type': 'equispaced', 'center_fraction' : [0.08], 'acceleration' : [4]}
-    dataset = FastMRIDataset(path, normalize='per_image', mask_info=mask_info)
+    if config["dataset"] == "CAREDrosophila":
+      path = '/clusterfs/abc/angelopoulos/care/Isotropic_Drosophila/train_data/data_label.npz'
+      dataset = CAREDrosophilaDataset(path, num_instances='all', normalize='min-max')
+      dataset = normalize_dataset(dataset)
+    elif config["dataset"] == "fastmri":
+      path = '/clusterfs/abc/amit/fastmri/knee/singlecoil_train/'
+      mask_info = {'type': 'equispaced', 'center_fraction' : [0.08], 'acceleration' : [4]}
+      dataset = FastMRIDataset(path, normalize_input='standard', normalize_output = 'min-max', mask_info=mask_info, num_volumes=10)
+      dataset = normalize_dataset(dataset)
+    #config.update(dataset.norm_params)
     trunk = UNet(1,1)
     model = add_uncertainty(trunk, config)
     lengths = np.round(len(dataset)*np.array(config["data_split_percentages"])).astype(int)
     lengths[-1] = len(dataset)-(lengths.sum()-lengths[-1])
     train_dataset, calib_dataset, val_dataset, _ = random_split(dataset, lengths.tolist())
+    pdb.set_trace()
     model = train_net(model,
                       train_dataset,
                       val_dataset,
@@ -64,6 +71,7 @@ if __name__ == "__main__":
     wandb.log({"epoch": config['epochs']+1, "Upper edge": examples_upper_edge})
     wandb.log({"epoch": config['epochs']+1, "Ground truth": examples_ground_truth})
     # Evaluate the risk and size
+    print(f"input shape: {val_dataset[0][0].shape}")
     risk, sizes, spearman, stratified_risk = eval_set_metrics(model, val_dataset, config)
     print(f"Risk: {risk}  |  Mean size: {sizes.mean()}  |  Spearman: {spearman}  |  stratified risk: {stratified_risk}  ")
     wandb.log({"risk": risk, "mean_size":sizes.mean(), "Spearman":spearman, "Size-Stratified Risk":stratified_risk})
