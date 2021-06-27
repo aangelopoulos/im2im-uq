@@ -74,7 +74,7 @@ def train_net(net,
       config = wandb.config
     # If we're loading from a checkpoint, do so.
     if load_from_checkpoint:
-      checkpoint_final_path = checkpoint_dir + f'/CP_epoch{epochs}_' + config['dataset'] + "_" + config['uncertainty_type'] + "_" + str(config['batch_size']) + "_" + str(config['lr']).replace('.','_') + '.pth'
+      checkpoint_final_path = checkpoint_dir + f'/CP_epoch{epochs}_' + config['dataset'] + "_" + config['uncertainty_type'] + "_" + str(config['batch_size']) + "_" + str(config['lr']) + "_" + config['input_normalization'] + "_" + config['output_normalization'].replace('.','_') + '.pth'
       if os.path.exists(checkpoint_final_path):
         try:
           net = torch.load(checkpoint_final_path)
@@ -86,7 +86,7 @@ def train_net(net,
       else:
         print(f"Final model cannot be loaded from checkpoint. Training now, for {epochs} epochs.")
         for e in reversed(range(epochs)):
-          checkpoint_intermediate_path = checkpoint_dir + f'/CP_epoch{e}_' + config['dataset'] + "_" + config['uncertainty_type'] + "_" + str(config['batch_size']) + "_" + str(config['lr']).replace('.','_') + '.pth'
+          checkpoint_intermediate_path = checkpoint_dir + f'/CP_epoch{e}_' + config['dataset'] + "_" + config['uncertainty_type'] + "_" + str(config['batch_size']) + "_" + str(config['lr']) + "_" + config['input_normalization'] + "_" + config['output_normalization'].replace('.','_') + '.pth'
           if os.path.exists(checkpoint_intermediate_path):
             net = torch.load(checkpoint_intermediate_path)
             starting_epoch = e
@@ -171,7 +171,7 @@ def train_net(net,
                       logging.info('Created checkpoint directory')
                   except OSError:
                       pass
-                  checkpoint_fname = checkpoint_dir + f'/CP_epoch{epoch + 1}_' + config['dataset'] + "_" + config['uncertainty_type'] + "_" + str(config['batch_size']) + "_" + str(config['lr']).replace('.','_') + '.pth'
+                  checkpoint_fname = checkpoint_dir + f'/CP_epoch{epoch + 1}_' + config['dataset'] + "_" + config['uncertainty_type'] + "_" + str(config['batch_size']) + "_" + str(config['lr']) + "_" + config['input_normalization'] + "_" + config['output_normalization'].replace('.','_') + '.pth'
                   torch.save(net.module, checkpoint_fname)
 
                   logging.info(f'Checkpoint {epoch + 1} saved !')

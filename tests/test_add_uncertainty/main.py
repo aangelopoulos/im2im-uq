@@ -32,9 +32,10 @@ if __name__ == "__main__":
     elif config["dataset"] == "fastmri":
       path = '/clusterfs/abc/amit/fastmri/knee/singlecoil_train/'
       mask_info = {'type': 'equispaced', 'center_fraction' : [0.08], 'acceleration' : [4]}
-      dataset = FastMRIDataset(path, normalize_input='standard', normalize_output = 'min-max', mask_info=mask_info, num_volumes=300)
+      dataset = FastMRIDataset(path, normalize_input=config["input_normalization"], normalize_output = config["output_normalization"], mask_info=mask_info, num_volumes=300)
       dataset = normalize_dataset(dataset)
       config.update(dataset.norm_params)
+
     trunk = UNet(1,1)
     model = add_uncertainty(trunk, config)
     lengths = np.round(len(dataset)*np.array(config["data_split_percentages"])).astype(int)

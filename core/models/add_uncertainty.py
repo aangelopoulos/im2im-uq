@@ -34,12 +34,6 @@ class ModelWithUncertainty(nn.Module):
     upper_edge = torch.maximum(upper_edge, output[:,1,:,:,:] + 1e-6) # set a lower bound on the size.
     lower_edge = torch.minimum(lower_edge, output[:,1,:,:,:] - 1e-6)
 
-    # IF MEAN STD NORM, HAVE TO FIX THAT
-    if self.params["output_normalization"] == "standard":
-      lower_edge = standard_to_minmax(lower_edge,self.params,output_bool=True) 
-      prediction = standard_to_minmax(prediction,self.params,output_bool=True) 
-      upper_edge = standard_to_minmax(upper_edge,self.params,output_bool=True) 
-
     return lower_edge, prediction, upper_edge 
 
   def nested_sets(self, x, lam=None):

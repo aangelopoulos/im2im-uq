@@ -12,7 +12,8 @@ import wandb
 import pdb
 
 def transform_output(x):
-  x[x>1] = 1
+  x = x - x.min()
+  x = x / x.max()
 
   x = np.maximum(0,np.minimum(255*x.cpu().squeeze(), 255))
   if len(x.shape) == 3:
@@ -26,6 +27,7 @@ def get_images(model,
                config):
   with torch.no_grad():
     model = model.to(device)
+
     lam = None
     if model.lhat == None:
       if config["uncertainty_type"] != "softmax":
@@ -33,20 +35,13 @@ def get_images(model,
       else:
         lam = 0.99
 
-    if config["input_normalization"] == "standard":
-      examples_input = [wandb.Image(transform_output(standard_to_minmax(val_dataset[img_idx][0],config,output_bool=False))) for img_idx in idx_iterator]
-    else:
-      examples_input = [wandb.Image(transform_output(val_dataset[img_idx][0])) for img_idx in idx_iterator]
+    examples_input = [wandb.Image(transform_output(val_dataset[img_idx][0])) for img_idx in idx_iterator]
     examples_output = [model.nested_sets((val_dataset[img_idx][0].unsqueeze(0).to(device),),lam=lam) for img_idx in idx_iterator]
-    min_val = min([example[0].min().item() for example in examples_output]) 
-    max_val = max([example[2].max().item() for example in examples_output]) 
-    examples_lower_edge = [wandb.Image(transform_output((example[0]-min_val)/max_val)) for example in examples_output]
-    examples_prediction = [wandb.Image(transform_output((example[1]-min_val)/max_val)) for example in examples_output]
-    examples_upper_edge = [wandb.Image(transform_output((example[2]-min_val)/max_val)) for example in examples_output]
-    if config["output_normalization"] == "standard":
-      examples_ground_truth = [wandb.Image(transform_output((standard_to_minmax(val_dataset[img_idx][1],config,output_bool=True)-min_val)/max_val)) for img_idx in idx_iterator]
-    else:
-      examples_ground_truth = [wandb.Image(transform_output((val_dataset[img_idx][1]-min_val)/max_val)) for img_idx in idx_iterator]
+    examples_lower_edge = [wandb.Image(transform_output(example[0])) for example in examples_output]
+    examples_prediction = [wandb.Image(transform_output(example[1])) for example in examples_output]
+    examples_upper_edge = [wandb.Image(transform_output(example[2])) for example in examples_output]
+    examples_ground_truth = [wandb.Image(transform_output(val_dataset[img_idx][1])) for img_idx in idx_iterator]
+
     return examples_input, examples_lower_edge, examples_prediction, examples_upper_edge, examples_ground_truth
 
 def eval_set_metrics(model, dataset, config):
@@ -56,8 +51,7 @@ def eval_set_metrics(model, dataset, config):
     rcps_loss_fn = get_rcps_loss_fn(config)
     model = model.to(device)
     labels = torch.cat([x[1].unsqueeze(0).to(device) for x in dataset], dim=0)
-    if config["output_normalization"] == "standard":
-      labels = standard_to_minmax(labels,config,output_bool=True)
+
     outputs_shape = list(model(dataset[0][0].unsqueeze(0).to(device)).shape)
     outputs_shape[0] = len(dataset)
     outputs = torch.zeros(tuple(outputs_shape),device=device)

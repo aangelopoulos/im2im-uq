@@ -76,8 +76,7 @@ def calibrate_model(model, dataset, config):
     rcps_loss_fn = get_rcps_loss_fn(config)
     model = model.to(device)
     labels = torch.cat([x[1].unsqueeze(0).to(device) for x in dataset], dim=0)
-    if config["output_normalization"] == "standard":
-      labels = standard_to_minmax(labels,config,output_bool=True)
+
     outputs_shape = list(model(dataset[0][0].unsqueeze(0).to(device)).shape)
     outputs_shape[0] = len(dataset)
     outputs = torch.zeros(tuple(outputs_shape),device=device)

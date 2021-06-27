@@ -66,4 +66,4 @@ parameters:
   input_normalization:
     value: "standard"
   output_normalization:
-    value: "min-max"
+    value: "standard"
