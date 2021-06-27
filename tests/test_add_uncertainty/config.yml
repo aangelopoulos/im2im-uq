@@ -28,3 +28,5 @@ checkpoint_dir: "tests/test_add_uncertainty/checkpoints"
 checkpoint_every: 1
 validate_every: 1
 num_softmax: 50 
+input_normalization: "standard"
+output_normalization: "min-max"

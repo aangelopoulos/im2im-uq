@@ -45,11 +45,11 @@ if __name__ == "__main__":
     dataset = torchvision.datasets.CIFAR10('/clusterfs/abc/angelopoulos/CIFAR10', download=True, transform=transform)
   elif wandb.config["dataset"] == "CAREDrosophila":
     path = '/clusterfs/abc/angelopoulos/care/Isotropic_Drosophila/train_data/data_label.npz'
-    dataset = CAREDrosophilaDataset(path, num_instances='all', normalize='min-max')
+    dataset = CAREDrosophilaDataset(path, num_instances='all', normalize=wandb.config["output_normalization"])
   elif wandb.config["dataset"] == "fastmri":
     path = '/clusterfs/abc/amit/fastmri/knee/singlecoil_train/'
     mask_info = {'type': 'equispaced', 'center_fraction' : [0.08], 'acceleration' : [4]}
-    dataset = FastMRIDataset(path, normalize_input='standard', normalize_output = 'min-max', mask_info=mask_info)
+    dataset = FastMRIDataset(path, normalize_input=wandb.config["input_normalization"], normalize_output = wandb.config["output_normalization"], mask_info=mask_info)
     dataset = normalize_dataset(dataset)
     wandb.config.update(dataset.norm_params)
     params.update(dataset.norm_params)
@@ -96,7 +96,8 @@ if __name__ == "__main__":
     examples_input, examples_lower_edge, examples_prediction, examples_upper_edge, examples_ground_truth = get_images(model,
                                                                                                                       val_dataset,
                                                                                                                       wandb.config['device'],
-                                                                                                                      list(range(5,10)))
+                                                                                                                      list(range(5,10)),
+                                                                                                                      params)
     # Log everything
     wandb.log({"epoch": wandb.config['epochs']+1, "examples_input": examples_input})
     wandb.log({"epoch": wandb.config['epochs']+1, "Lower edge": examples_lower_edge})

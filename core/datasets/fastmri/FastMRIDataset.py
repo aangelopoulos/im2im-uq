@@ -156,6 +156,7 @@ class FastMRIDataset(Dataset):
         elif self.normalize_output == 'min-max' and self.norm_params != None:
           output_img = (sample[1] - self.norm_params['output_min'])/self.norm_params['output_max']
         else:
+          print("No normalization parameters yet.")
           output_img = sample[1]
         
 

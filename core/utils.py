@@ -69,6 +69,13 @@ def normalize(x, type, per_pixel, input_output):
 
     return x, params
 
+def standard_to_minmax(x,config,output_bool):
+  mu = config["output_mean"] if output_bool else config["input_mean"]
+  std = config["output_mean"] if output_bool else config["input_mean"]
+  lb = config["output_mean"] if output_bool else config["input_mean"]
+  ub = config["output_mean"] if output_bool else config["input_mean"]
+  x = (((x * std)+mu)-lb)/ub
+  return x
 
 def plot_loss(losses, step, path):
     plt.figure()

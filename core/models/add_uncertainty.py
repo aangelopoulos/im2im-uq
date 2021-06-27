@@ -8,6 +8,7 @@ from core.models.finallayers.residual_magnitude_layer import ResidualMagnitudeLa
 from core.models.finallayers.softmax_layer import SoftmaxLayer, softmax_loss_fn, softmax_nested_sets_from_output
 from core.models.trunks.wnet import WNet
 from core.models.trunks.unet import UNet
+from core.utils import standard_to_minmax
 import json
 
 class ModelWithUncertainty(nn.Module):
@@ -27,14 +28,17 @@ class ModelWithUncertainty(nn.Module):
   def loss_fn(self, pred, target):
     return self.in_train_loss_fn(pred,target,self.params) 
 
+  # Always outputs [0,1] valued nested sets
   def nested_sets_from_output(self, output, lam=None):
     lower_edge, prediction, upper_edge = self.in_nested_sets_from_output_fn(self, output, lam)
     upper_edge = torch.maximum(upper_edge, output[:,1,:,:,:] + 1e-6) # set a lower bound on the size.
     lower_edge = torch.minimum(lower_edge, output[:,1,:,:,:] - 1e-6)
 
-    lower_edge = (lower_edge * self.params["output_max"]) + self.params["output_min"]
-    prediction = (prediction * self.params["output_max"]) + self.params["output_min"]
-    upper_edge = (upper_edge * self.params["output_max"]) + self.params["output_min"]
+    # IF MEAN STD NORM, HAVE TO FIX THAT
+    if self.params["output_normalization"] == "standard":
+      lower_edge = standard_to_minmax(lower_edge,self.params,output_bool=True) 
+      prediction = standard_to_minmax(prediction,self.params,output_bool=True) 
+      upper_edge = standard_to_minmax(upper_edge,self.params,output_bool=True) 
 
     return lower_edge, prediction, upper_edge 
 

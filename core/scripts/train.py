@@ -31,7 +31,8 @@ def run_validation(net,
                    val_dataset,
                    device,
                    global_step,
-                   epoch):
+                   epoch,
+                   config):
   with torch.no_grad():
     net.eval()
     val_loss = eval_net(net, val_loader, device)
@@ -42,7 +43,8 @@ def run_validation(net,
       examples_input, examples_lower_edge, examples_prediction, examples_upper_edge, examples_ground_truth = get_images(net,
                                                                                                                         val_dataset,
                                                                                                                         device,
-                                                                                                                        list(range(5)))
+                                                                                                                        list(range(5)),
+                                                                                                                        config)
       # Log everything
       wandb.log({"epoch": epoch, "iter":global_step, "examples_input": examples_input})
       wandb.log({"epoch": epoch, "iter":global_step, "Lower edge": examples_lower_edge})
@@ -119,7 +121,8 @@ def train_net(net,
                    val_dataset,
                    device,
                    global_step,
-                   0)
+                   0,
+                   config)
 
     for epoch in range(starting_epoch,epochs):
         net.train()
@@ -139,7 +142,7 @@ def train_net(net,
             optimizer.zero_grad()
             loss.backward()
             loss.retain_grad()
-            nn.utils.clip_grad_value_(net.parameters(), 0.1)
+            #nn.utils.clip_grad_value_(net.parameters(), 0.1)
             optimizer.step()
 
             global_step += 1
@@ -156,7 +159,8 @@ def train_net(net,
                              val_dataset,
                              device,
                              global_step,
-                             epoch)
+                             epoch,
+                             config)
               #scheduler.step(val_loss)
 
           if (epoch+1) % checkpoint_every == 0:

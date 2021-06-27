@@ -14,7 +14,7 @@ parameters:
   dataset:
     value: "fastmri"
   data_split_percentages:
-    value: [0.8, 0.01, 0.01, 0.0]
+    value: [0.8, 0.1, 0.1, 0.0]
   model:
     value: "UNet"
   uncertainty_type: 
@@ -50,7 +50,7 @@ parameters:
   checkpoint_every:
     value: 1 
   validate_every:
-    value: 3 
+    value: 1 
   q_lo:
     value: 0.05
   q_hi:
@@ -63,3 +63,7 @@ parameters:
     value: 1
   num_softmax:
     value: 50 
+  input_normalization:
+    value: "standard"
+  output_normalization:
+    value: "min-max"
