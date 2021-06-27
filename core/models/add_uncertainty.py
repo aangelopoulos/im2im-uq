@@ -3,8 +3,10 @@ sys.path.insert(1, os.path.join(sys.path[0], '../../'))
 import torch
 import torch.nn as nn
 from core.models.finallayers.quantile_layer import QuantileRegressionLayer, quantile_regression_loss_fn, quantile_regression_nested_sets_from_output
+from core.models.finallayers.quantile_l1_layer import QuantileRegressionL1Layer, quantile_regression_l1_loss_fn, quantile_regression_l1_nested_sets_from_output
 from core.models.finallayers.gaussian_layer import GaussianRegressionLayer, gaussian_regression_loss_fn, gaussian_regression_nested_sets_from_output
 from core.models.finallayers.residual_magnitude_layer import ResidualMagnitudeLayer, residual_magnitude_loss_fn, residual_magnitude_nested_sets_from_output
+from core.models.finallayers.residual_magnitude_l1_layer import ResidualMagnitudeL1Layer, residual_magnitude_l1_loss_fn, residual_magnitude_l1_nested_sets_from_output
 from core.models.finallayers.softmax_layer import SoftmaxLayer, softmax_loss_fn, softmax_nested_sets_from_output
 from core.models.trunks.wnet import WNet
 from core.models.trunks.unet import UNet
@@ -65,6 +67,10 @@ def add_uncertainty(model, params):
     last_layer = QuantileRegressionLayer(model.n_channels_middle, model.n_channels_out, params) 
     train_loss_fn = quantile_regression_loss_fn    
     nested_sets_from_output_fn = quantile_regression_nested_sets_from_output
+  if params["uncertainty_type"] == "quantiles_l1":
+    last_layer = QuantileRegressionL1Layer(model.n_channels_middle, model.n_channels_out, params) 
+    train_loss_fn = quantile_regression_l1_loss_fn    
+    nested_sets_from_output_fn = quantile_regression_l1_nested_sets_from_output
   elif params["uncertainty_type"] == "gaussian":
     last_layer = GaussianRegressionLayer(model.n_channels_middle, model.n_channels_out, params) 
     train_loss_fn = gaussian_regression_loss_fn    
@@ -73,6 +79,10 @@ def add_uncertainty(model, params):
     last_layer = ResidualMagnitudeLayer(model.n_channels_middle, model.n_channels_out, params) 
     train_loss_fn = residual_magnitude_loss_fn    
     nested_sets_from_output_fn = residual_magnitude_nested_sets_from_output
+  elif params["uncertainty_type"] == "residual_magnitude_l1":
+    last_layer = ResidualMagnitudeL1Layer(model.n_channels_middle, model.n_channels_out, params) 
+    train_loss_fn = residual_magnitude_l1_loss_fn    
+    nested_sets_from_output_fn = residual_magnitude_l1_nested_sets_from_output
   elif params["uncertainty_type"] == "softmax":
     last_layer = SoftmaxLayer(model.n_channels_middle, model.n_channels_out, params) 
     train_loss_fn = softmax_loss_fn
