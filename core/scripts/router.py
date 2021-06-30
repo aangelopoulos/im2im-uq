@@ -93,17 +93,19 @@ if __name__ == "__main__":
     model = calibrate_model(model, calib_dataset, params)
     print(f"Model calibrated! lambda hat = {model.lhat}")
     # Get the prediction sets and properly organize them 
-    examples_input, examples_lower_edge, examples_prediction, examples_upper_edge, examples_ground_truth = get_images(model,
-                                                                                                                      val_dataset,
-                                                                                                                      wandb.config['device'],
-                                                                                                                      list(range(5,10)),
-                                                                                                                      params)
+    examples_input, examples_lower_edge, examples_prediction, examples_upper_edge, examples_ground_truth, examples_ll, examples_ul = get_images(model,
+                                                                                                                                     val_dataset,
+                                                                                                                                     wandb.config['device'],
+                                                                                                                                     list(range(wandb.config['num_validation_images'])),
+                                                                                                                                     params)
     # Log everything
     wandb.log({"epoch": wandb.config['epochs']+1, "examples_input": examples_input})
     wandb.log({"epoch": wandb.config['epochs']+1, "Lower edge": examples_lower_edge})
     wandb.log({"epoch": wandb.config['epochs']+1, "Predictions": examples_prediction})
     wandb.log({"epoch": wandb.config['epochs']+1, "Upper edge": examples_upper_edge})
     wandb.log({"epoch": wandb.config['epochs']+1, "Ground truth": examples_ground_truth})
+    wandb.log({"epoch": wandb.config['epochs']+1, "Lower length": examples_ll})
+    wandb.log({"epoch": wandb.config['epochs']+1, "Upper length": examples_ul})
     # Get the risk and set size
     risk, sizes, spearman, stratified_risk = eval_set_metrics(model, val_dataset, params)
 

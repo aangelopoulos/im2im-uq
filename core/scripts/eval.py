@@ -11,9 +11,10 @@ from core.utils import standard_to_minmax
 import wandb
 import pdb
 
-def transform_output(x):
-  x = x - x.min()
-  x = x / x.max()
+def transform_output(x,self_normalize=True):
+  if self_normalize:
+    x = x - x.min()
+    x = x / x.max()
 
   x = np.maximum(0,np.minimum(255*x.cpu().squeeze(), 255))
   if len(x.shape) == 3:
@@ -42,7 +43,18 @@ def get_images(model,
     examples_upper_edge = [wandb.Image(transform_output(example[2])) for example in examples_output]
     examples_ground_truth = [wandb.Image(transform_output(val_dataset[img_idx][1])) for img_idx in idx_iterator]
 
-    return examples_input, examples_lower_edge, examples_prediction, examples_upper_edge, examples_ground_truth
+    # Calculate lengths on their own scales
+    lower_lengths = [example[1]-example[0] for example in examples_output]
+    lower_lengths = [transform_output(lower_lengths[i]/(examples_output[i][1].max()-examples_output[i][1].min()), self_normalize=False) for i in range(len(examples_output))]
+    #lower_lengths = [lower_lengths[i]/(examples_output[i][1].max()-examples_output[i][1].min()) for i in range(len(examples_output))]
+    upper_lengths = [example[2]-example[1] for example in examples_output]
+    upper_lengths = [transform_output(upper_lengths[i]/(examples_output[i][1].max()-examples_output[i][1].min()), self_normalize=False) for i in range(len(examples_output))]
+    #upper_lengths = [upper_lengths[i]/(examples_output[i][1].max()-examples_output[i][1].min()) for i in range(len(examples_output))]
+
+    examples_lower_length = [wandb.Image(ll) for ll in lower_lengths]
+    examples_upper_length = [wandb.Image(ul) for ul in upper_lengths]
+
+    return examples_input, examples_lower_edge, examples_prediction, examples_upper_edge, examples_ground_truth, examples_lower_length, examples_upper_length
 
 def eval_set_metrics(model, dataset, config):
   with torch.no_grad():
