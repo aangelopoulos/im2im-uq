@@ -42,19 +42,6 @@ if __name__ == "__main__":
     lengths[-1] = len(dataset)-(lengths.sum()-lengths[-1])
     train_dataset, calib_dataset, val_dataset, _ = random_split(dataset, lengths.tolist())
 
-    # Get the prediction sets and properly organize them 
-    examples_input, examples_lower_edge, examples_prediction, examples_upper_edge, examples_ground_truth = get_images(model,
-                                                                                                                      val_dataset,
-                                                                                                                      config['device'],
-                                                                                                                      list(range(5)),
-                                                                                                                      config)
-    # Log everything
-    wandb.log({"epoch": 0, "examples_input": examples_input})
-    wandb.log({"epoch": 0, "Lower edge": examples_lower_edge})
-    wandb.log({"epoch": 0, "Predictions": examples_prediction})
-    wandb.log({"epoch": 0, "Upper edge": examples_upper_edge})
-    wandb.log({"epoch": config['epochs']+1, "Ground truth": examples_ground_truth})
-
     model = train_net(model,
                       train_dataset,
                       val_dataset,
@@ -74,17 +61,18 @@ if __name__ == "__main__":
     model = calibrate_model(model, calib_dataset, config)
     print(f"Model calibrated! lambda hat = {model.lhat}")
     # Get the prediction sets and properly organize them 
-    examples_input, examples_lower_edge, examples_prediction, examples_upper_edge, examples_ground_truth = get_images(model,
-                                                                                                                      val_dataset,
-                                                                                                                      config['device'],
-                                                                                                                      list(range(5)),
-                                                                                                                      config)
+    examples_input, examples_lower_edge, examples_prediction, examples_upper_edge, examples_ground_truth, examples_set_size = get_images(model,
+                                                                                                                              val_dataset,
+                                                                                                                              config['device'],
+                                                                                                                              list(range(5)),
+                                                                                                                              config)
     # Log everything
     wandb.log({"epoch": config['epochs']+1, "examples_input": examples_input})
     wandb.log({"epoch": config['epochs']+1, "Lower edge": examples_lower_edge})
     wandb.log({"epoch": config['epochs']+1, "Predictions": examples_prediction})
     wandb.log({"epoch": config['epochs']+1, "Upper edge": examples_upper_edge})
     wandb.log({"epoch": config['epochs']+1, "Ground truth": examples_ground_truth})
+    wandb.log({"epoch": config['epochs']+1, "Set size": examples_set_size})
     # Evaluate the risk and size
     print(f"input shape: {val_dataset[0][0].shape}")
     risk, sizes, spearman, stratified_risk = eval_set_metrics(model, val_dataset, config)

@@ -7,7 +7,7 @@ import pdb
 
 class QuantileRegressionL1Layer(nn.Module):
     def __init__(self, n_channels_middle, n_channels_out, params):
-        super(QuantileRegressionLayer, self).__init__()
+        super(QuantileRegressionL1Layer, self).__init__()
         self.q_lo = params["q_lo"] 
         self.q_hi = params["q_hi"]
         self.params = params

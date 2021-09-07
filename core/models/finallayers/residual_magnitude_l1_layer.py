@@ -6,7 +6,7 @@ import pdb
 
 class ResidualMagnitudeL1Layer(nn.Module):
     def __init__(self, n_channels_middle, n_channels_out, params):
-        super(ResidualMagnitudeLayer, self).__init__()
+        super(ResidualMagnitudeL1Layer, self).__init__()
         self.params = params
 
         self.prediction = nn.Conv2d(n_channels_middle, n_channels_out, kernel_size=3, padding=1)

@@ -35,24 +35,26 @@ def run_validation(net,
                    config):
   with torch.no_grad():
     net.eval()
-    val_loss = eval_net(net, val_loader, device)
-    wandb.log({"epoch": epoch, "iter":global_step, "val_loss":val_loss})
     # Plot images 
     try:
       # Get the prediction sets and properly organize them 
-      examples_input, examples_lower_edge, examples_prediction, examples_upper_edge, examples_ground_truth = get_images(net,
-                                                                                                                        val_dataset,
-                                                                                                                        device,
-                                                                                                                        list(range(5)),
-                                                                                                                        config)
+      examples_input, examples_lower_edge, examples_prediction, examples_upper_edge, examples_ground_truth, examples_ll, examples_ul= get_images(net,
+                                                                                                                                      val_dataset,
+                                                                                                                                      device,
+                                                                                                                                      list(range(config['num_validation_images'])),
+                                                                                                                                      config)
       # Log everything
       wandb.log({"epoch": epoch, "iter":global_step, "examples_input": examples_input})
       wandb.log({"epoch": epoch, "iter":global_step, "Lower edge": examples_lower_edge})
       wandb.log({"epoch": epoch, "iter":global_step, "Predictions": examples_prediction})
       wandb.log({"epoch": epoch, "iter":global_step, "Upper edge": examples_upper_edge})
       wandb.log({"epoch": epoch, "iter":global_step, "Ground truth": examples_ground_truth})
+      wandb.log({"epoch": epoch, "iter":global_step, "Lower length": examples_ll})
+      wandb.log({"epoch": epoch, "iter":global_step, "Upper length": examples_ul})
     except:
       print("Failed logging images.")
+    val_loss = eval_net(net, val_loader, device)
+    wandb.log({"epoch": epoch, "iter":global_step, "val_loss":val_loss})
   net.train()
 
 def train_net(net,
@@ -121,7 +123,7 @@ def train_net(net,
                    val_dataset,
                    device,
                    global_step,
-                   0,
+                   starting_epoch,
                    config)
 
     for epoch in range(starting_epoch,epochs):
