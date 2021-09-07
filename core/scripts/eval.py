@@ -89,6 +89,7 @@ def eval_net(net, loader, device):
               # Predict
               labels_pred = net(*x) # Unpack tuple
 
+
               val_loss += net.loss_fn(labels_pred, labels).item()/n_val
               pbar.update()
 

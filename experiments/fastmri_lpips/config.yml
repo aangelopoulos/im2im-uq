@@ -1,0 +1,69 @@
+#sample config defaults file
+program: core/scripts/router.py
+method: grid
+metric:
+  goal: minimize
+  name: mean_size 
+name: 'fastmri_lpips'
+project: 'fastmri_lpips'
+parameters:
+  group:
+    value: "fastmri_lpips"
+  output_dir:
+    value: "experiments/fastmri_lpips/outputs/"
+  dataset:
+    value: "fastmri"
+  data_split_percentages:
+    value: [0.8, 0.1, 0.1, 0.0]
+  model:
+    value: "UNet"
+  uncertainty_type: 
+    values: ["quantiles_lpips"]
+  alpha: 
+    value: 0.1
+  delta: 
+    value: 0.1
+  num_lambdas: 
+    value: 1000
+  rcps_loss: 
+    value: "fraction_missed"
+  minimum_lambda_softmax:
+    value: 0.99 
+  maximum_lambda_softmax: 
+    value: 1 
+  minimum_lambda:
+    value: 0 
+  maximum_lambda:
+    value: 6 
+  device:
+    value: "cuda"
+  epochs:
+    value: 20 
+  batch_size:
+    value: 32 
+  lr:
+    values: [0.0001]
+  load_from_checkpoint: 
+    value: True
+  checkpoint_dir:
+    value: "experiments/fastmri_lpips/checkpoints"
+  checkpoint_every:
+    value: 1 
+  validate_every:
+    value: 1 
+  q_lo:
+    value: 0.05
+  q_hi:
+    value: 0.95
+  q_lo_weight:
+    value: 1
+  q_hi_weight:
+    value: 1
+  mse_weight:
+    value: 1
+  num_softmax:
+    value: 50 
+  input_normalization:
+    value: "standard"
+  output_normalization:
+    value: "min-max"
