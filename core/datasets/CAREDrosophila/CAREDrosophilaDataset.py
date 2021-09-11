@@ -41,5 +41,9 @@ class CAREDrosophilaDataset(Dataset):
 if __name__ == "__main__":
   path = '/clusterfs/abc/angelopoulos/care/Isotropic_Drosophila/train_data/data_label.npz'
   dataset = CAREDrosophilaDataset(path, num_instances=20, normalize='min-max')
-  loader = DataLoader(dataset, batch_size=5, shuffle=True)
+  loader = DataLoader(dataset, batch_size=5, shuffle=True, num_workers=8)
+
+  for idx, sample in enumerate(loader):
+      print(idx)
+
   pdb.set_trace()
