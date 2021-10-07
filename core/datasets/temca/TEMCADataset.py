@@ -24,7 +24,6 @@ class TEMCADataset(IterableDataset):
         self.path = path
         self.output_size = patch_size #[input_patch_size[0]*upsampling[0], input_patch_size[1]*upsampling[1]]
         self.downsampling = downsampling
-        self.num_imgs = num_imgs
         self.buffer_size = buffer_size                
         self.img_index = 0  
         self.normalize = normalize
@@ -32,10 +31,11 @@ class TEMCADataset(IterableDataset):
         # collect all the imgs as filepaths
         self.img_paths = glob(path + '**/*.png')
         random.shuffle(self.img_paths)
-        self.img_paths = self.img_paths[0:num_imgs]
-        print(len(self.img_paths))
+        if num_imgs != 'all':
+            self.img_paths = self.img_paths[0:num_imgs]
+        print('using ' + str(len(self.img_paths)) + ' full images')
         
-        #read in the first buffer
+        # read in the first buffer
         self.patch_buffer = []
         self.get_buffer()
 
@@ -68,8 +68,6 @@ class TEMCADataset(IterableDataset):
                   patch = img[r_start:r_end, c_start:c_end]
                   if patch[np.where(patch==0)].size < 0.85*(patch.shape[0] * patch.shape[1]):
                       self.patch_buffer += [patch]
-                  else:
-                      print('NOOOO') 
                 
 
 
@@ -93,7 +91,7 @@ class TEMCADataset(IterableDataset):
 if __name__ == "__main__":
         
     # Testing the dataset
-    dataset = TEMCADataset('/local/amit/temca_data/', patch_size=[2048, 2048], downsampling=[4,4], num_imgs=10, buffer_size=15, normalize='-11') 
+    dataset = TEMCADataset('/local/amit/temca_data/', patch_size=[2048, 2048], downsampling=[4,4], num_imgs='all', buffer_size=15, normalize='-11') 
     loader = DataLoader(dataset, batch_size=16, drop_last=False, num_workers=0)    
     img = next(iter(dataset))
   
