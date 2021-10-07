@@ -93,7 +93,7 @@ class TEMCADataset(IterableDataset):
 if __name__ == "__main__":
         
     # Testing the dataset
-    dataset = TEMCADataset('/local/amit/more_data/', patch_size=[2048, 2048], downsampling=[4,4], num_imgs=10, buffer_size=15, normalize='-11') 
+    dataset = TEMCADataset('/local/amit/temca_data/', patch_size=[2048, 2048], downsampling=[4,4], num_imgs=10, buffer_size=15, normalize='-11') 
     loader = DataLoader(dataset, batch_size=16, drop_last=False, num_workers=0)    
     img = next(iter(dataset))
   
