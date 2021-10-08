@@ -136,7 +136,6 @@ def train_net(net,
         epoch_loss = 0
         num_examples = 0
         for batch in tqdm(train_loader):
-            print("Batch!")
             labels = batch[-1].to(device=device)
             x = tuple([batch[i].to(device=device, dtype=torch.float32) for i in range(len(batch)-1)])
 
