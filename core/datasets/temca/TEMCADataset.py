@@ -90,16 +90,19 @@ class TEMCADataset(IterableDataset):
                 low_res = self.upsampling_layer(low_res).squeeze(dim=0)
                 high_res = torch.from_numpy(gt[None, :, :])
                 yield low_res, high_res
+        self.img_index = 0
 
 if __name__ == "__main__":
         
     # Testing the dataset
-    dataset = TEMCADataset('/local/amit/temca_data/', patch_size=[2048, 2048], downsampling=[4,4], num_imgs='all', buffer_size=15, normalize='-11') 
+    dataset = TEMCADataset('/local/amit/temca_data/', patch_size=[2048, 2048], downsampling=[4,4], num_imgs=5, buffer_size=5, normalize='-11') 
     loader = DataLoader(dataset, batch_size=16, drop_last=False, num_workers=0)    
     img = next(iter(dataset))
   
     samp = 0
-    for idx, sample in enumerate(loader):
+    for e in range(5):
+      print('epoch: ' + str(e))
+      for idx, sample in enumerate(loader):
         print(samp)
         samp += sample[1].shape[0]
     print(samp)
