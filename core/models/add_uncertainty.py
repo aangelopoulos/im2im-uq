@@ -72,7 +72,7 @@ def add_uncertainty(model, params):
     last_layer = QuantileRegressionL1Layer(model.n_channels_middle, model.n_channels_out, params) 
     train_loss_fn = quantile_regression_l1_loss_fn    
     nested_sets_from_output_fn = quantile_regression_l1_nested_sets_from_output
-  if params["uncertainty_type"] == "quantiles_lpips":
+  elif params["uncertainty_type"] == "quantiles_lpips":
     last_layer = QuantileRegressionLPIPSLayer(model.n_channels_middle, model.n_channels_out, params) 
     train_loss_fn = last_layer.quantile_regression_lpips_loss_fn    
     nested_sets_from_output_fn = quantile_regression_lpips_nested_sets_from_output

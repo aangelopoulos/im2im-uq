@@ -36,6 +36,13 @@ def get_images(model,
       else:
         lam = 0.99
 
+    try:
+      # If dataset is iterable, create a list of outputs
+      my_iter = iter(val_dataset)
+      val_dataset = [next(my_iter) for img_idx in idx_iterator]
+    except:
+      pass
+
     examples_input = [wandb.Image(transform_output(val_dataset[img_idx][0])) for img_idx in idx_iterator]
     examples_output = [model.nested_sets((val_dataset[img_idx][0].unsqueeze(0).to(device),),lam=lam) for img_idx in idx_iterator]
     examples_lower_edge = [wandb.Image(transform_output(example[0])) for example in examples_output]

@@ -1,11 +1,14 @@
 import os, sys, inspect
 sys.path.insert(1, os.path.join(sys.path[0], '../../'))
 import wandb
+import random
+import copy
 import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
 import torchvision 
 import torchvision.transforms as T
+import warnings
 import yaml
 
 from core.scripts.train import train_net
@@ -21,10 +24,12 @@ from core.models.trunks.unet import UNet
 # Datasets
 from core.datasets.CAREDrosophila import CAREDrosophilaDataset
 from core.datasets.fastmri import FastMRIDataset
+from core.datasets.temca import TEMCADataset
 
 if __name__ == "__main__":
   # Fix the randomness
   fix_randomness()
+  warnings.filterwarnings("ignore")
 
   print("Entered main method.")
   wandb.init() 
@@ -53,6 +58,9 @@ if __name__ == "__main__":
     dataset = normalize_dataset(dataset)
     wandb.config.update(dataset.norm_params)
     params.update(dataset.norm_params)
+  elif wandb.config["dataset"] == "temca":
+    path = '/clusterfs/fiona/amit/temca_data/'
+    dataset = TEMCADataset(path, patch_size=[wandb.config["side_length"], wandb.config["side_length"]], downsampling=[wandb.config["downsampling_factor"],wandb.config["downsampling_factor"]], num_imgs='all', buffer_size=wandb.config["num_buffer"], normalize='01') 
   else:
     raise NotImplementedError 
 
@@ -69,7 +77,17 @@ if __name__ == "__main__":
   # DATA SPLITTING
   lengths = np.round(len(dataset)*np.array(wandb.config["data_split_percentages"])).astype(int)
   lengths[-1] = len(dataset)-(lengths.sum()-lengths[-1])
-  train_dataset, calib_dataset, val_dataset, _ = torch.utils.data.random_split(dataset, lengths.tolist()) 
+  if wandb.config["dataset"] == "temca":
+    img_paths = dataset.img_paths
+    random.shuffle(img_paths)
+    train_dataset = copy.deepcopy(dataset)
+    calib_dataset = copy.deepcopy(dataset)
+    val_dataset = copy.deepcopy(dataset)
+    train_dataset.img_paths = img_paths[:lengths[0]]
+    calib_dataset.img_paths = img_paths[lengths[0]:(lengths[0]+lengths[1])]
+    val_dataset.img_paths = img_paths[(lengths[0]+lengths[1]):(lengths[0]+lengths[1]+lengths[2])]
+  else:
+    train_dataset, calib_dataset, val_dataset, _ = torch.utils.data.random_split(dataset, lengths.tolist()) 
   
   model = train_net(model,
                     train_dataset,

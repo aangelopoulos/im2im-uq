@@ -1,9 +1,11 @@
 import os,sys,inspect
 sys.path.insert(1, os.path.join(sys.path[0], '../../'))
+import random, copy
 import torch
 import torch.nn as nn
 from core.datasets.CAREDrosophila import CAREDrosophilaDataset
 from core.datasets.fastmri import FastMRIDataset
+from core.datasets.temca import TEMCADataset
 from core.models.trunks.unet import UNet
 from core.models.trunks.wnet import WNet
 from core.models.add_uncertainty import add_uncertainty
@@ -35,12 +37,27 @@ if __name__ == "__main__":
       dataset = FastMRIDataset(path, normalize_input=config["input_normalization"], normalize_output = config["output_normalization"], mask_info=mask_info, num_volumes=300)
       dataset = normalize_dataset(dataset)
       config.update(dataset.norm_params)
+    elif config["dataset"] == "temca":
+      path = '/clusterfs/fiona/amit/temca_data/'
+      dataset = TEMCADataset(path, patch_size=[1024, 1024], downsampling=[4,4], num_imgs='all', buffer_size=90, normalize='01') 
+    else:
+      raise NotImplementedError
 
     trunk = UNet(1,1)
     model = add_uncertainty(trunk, config)
     lengths = np.round(len(dataset)*np.array(config["data_split_percentages"])).astype(int)
     lengths[-1] = len(dataset)-(lengths.sum()-lengths[-1])
-    train_dataset, calib_dataset, val_dataset, _ = random_split(dataset, lengths.tolist())
+    if config["dataset"] == "temca":
+      img_paths = dataset.img_paths
+      random.shuffle(img_paths)
+      train_dataset = copy.deepcopy(dataset)
+      calib_dataset = copy.deepcopy(dataset)
+      val_dataset = copy.deepcopy(dataset)
+      train_dataset.img_paths = img_paths[:lengths[0]]
+      calib_dataset.img_paths = img_paths[lengths[0]:(lengths[0]+lengths[1])]
+      val_dataset.img_paths = img_paths[(lengths[0]+lengths[1]):]
+    else:
+      train_dataset, calib_dataset, val_dataset, _ = random_split(dataset, lengths.tolist())
 
     model = train_net(model,
                       train_dataset,

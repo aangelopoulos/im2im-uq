@@ -1,7 +1,7 @@
 name: "test_add_uncertainty"
 group: "test"
 output_dir: "tests/test_add_uncertainty/outputs/"
-dataset: "fastmri"
+dataset: "temca"
 data_split_percentages: [0.8, 0.1, 0.1, 0.0]
 model: "UNet"
 uncertainty_type: "quantiles"
@@ -18,10 +18,11 @@ maximum_lambda: 12
 minimum_lambda_softmax: 0.99 
 maximum_lambda_softmax: 0.998 
 mse_weight: 1
-device: "cuda:0"
+num_validation_images: 100
+device: "cuda"
 device_ids: [0,1]
 epochs: 2 
-batch_size: 78 
+batch_size: 16 
 lr: 0.0001
 load_from_checkpoint: True
 checkpoint_dir: "tests/test_add_uncertainty/checkpoints"

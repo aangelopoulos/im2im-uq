@@ -6,6 +6,7 @@ import matplotlib as mpl
 from torch.utils.data import IterableDataset, DataLoader
 import pdb
 import torch
+import torch.nn as nn
 import core.datasets.utils as utils
 from tqdm import tqdm
 import time
@@ -27,6 +28,7 @@ class TEMCADataset(IterableDataset):
         self.buffer_size = buffer_size                
         self.img_index = 0  
         self.normalize = normalize
+        self.upsampling_layer = nn.Upsample(size=patch_size)
 
         # collect all the imgs as filepaths
         self.img_paths = glob(path + '**/*.png')
@@ -37,7 +39,6 @@ class TEMCADataset(IterableDataset):
         
         # read in the first buffer
         self.patch_buffer = []
-        self.get_buffer()
 
     def get_buffer(self):
         if self.img_index + self.buffer_size > len(self.img_paths):
@@ -72,9 +73,8 @@ class TEMCADataset(IterableDataset):
 
 
 
-    #def __len__(self):
-        
-    #    return sum(self.num_patches)
+    def __len__(self):
+        return len(self.img_paths)
 
     def __iter__(self):
         while self.img_index != -1:
@@ -86,7 +86,10 @@ class TEMCADataset(IterableDataset):
                     gt = gt/255.0
                 if self.normalize == '-11':
                     gt = 2*(gt/255.0 - 0.5)
-                yield torch.from_numpy(gt[None,0::self.downsampling[0], 0::self.downsampling[1]]), torch.from_numpy(gt[None, :, :])
+                low_res = torch.from_numpy(gt[None,None,0::self.downsampling[0], 0::self.downsampling[1]])
+                low_res = self.upsampling_layer(low_res).squeeze(dim=0)
+                high_res = torch.from_numpy(gt[None, :, :])
+                yield low_res, high_res
 
 if __name__ == "__main__":
         
