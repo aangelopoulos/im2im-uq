@@ -71,19 +71,17 @@ def eval_set_metrics(model, dataset, config):
     model = model.to(device)
     labels = torch.cat([x[1].unsqueeze(0).to(device) for x in dataset], dim=0)
 
-    outputs_shape = list(model(dataset[0][0].unsqueeze(0).to(device)).shape)
-    outputs_shape[0] = len(dataset)
-    outputs = torch.zeros(tuple(outputs_shape),device=device)
-    print("Input")
-    print(dataset[0][0].unsqueeze(0))
-    print(dataset[0][0].unsqueeze(0).shape)
-    
-    for i in range(len(dataset)):
-      outputs[i,:,:,:,:] = model(dataset[i][0].unsqueeze(0).to(device))
+    if config['dataset'] == 'temca':
+      outputs = torch.cat([model(x[0].unsqueeze(0).to(device)) for x in dataset], dim=0)
+    else:
+      outputs_shape = list(model(dataset[0][0].unsqueeze(0).to(device)).shape)
+      outputs_shape[0] = len(dataset)
+      outputs = torch.zeros(tuple(outputs_shape),device=device)
+      
+      for i in range(len(dataset)):
+        outputs[i,:,:,:,:] = model(dataset[i][0].unsqueeze(0).to(device))
     out_dataset = TensorDataset(outputs,labels)
-    print("Output")
-    print(out_dataset[0][0])
-    print(out_dataset[0][0].shape)
+
     losses, sizes, spearman, stratified_risks = get_rcps_metrics_from_outputs(model, out_dataset, rcps_loss_fn, device)
     return losses.mean(), sizes, spearman, stratified_risks
 
@@ -92,14 +90,11 @@ def eval_net(net, loader, device):
       net.eval()
       net.to(device=device)
       #label_type = torch.float32 if net.n_classes == 1 else torch.long
-      n_val = len(loader)  # the number of batch
-      if n_val == 0:
-          print("No val points, returning 0")
-          return 0
 
       val_loss = 0
+      num_val = 0
 
-      with tqdm(total=n_val, desc='Validation round', unit='batch', leave=False) as pbar:
+      with tqdm(total=10000, desc='Validation round', unit='batch', leave=False) as pbar:
           for batch in loader:
               labels = batch[-1].to(device=device)
               x = tuple([batch[i] for i in range(len(batch)-1)])
@@ -108,9 +103,13 @@ def eval_net(net, loader, device):
               # Predict
               labels_pred = net(*x) # Unpack tuple
 
-
-              val_loss += net.loss_fn(labels_pred, labels).item()/n_val
+              num_val += labels.shape[0]
+              val_loss += net.loss_fn(labels_pred, labels).item()
               pbar.update()
 
       net.train()
-      return val_loss 
+
+      if num_val == 0:
+        return 0
+
+      return val_loss/num_val

@@ -71,11 +71,6 @@ class TEMCADataset(IterableDataset):
                       self.patch_buffer += [patch]
                 
 
-
-
-    def __len__(self):
-        return len(self.img_paths)
-
     def __iter__(self):
         while self.img_index != -1:
             if len(self.patch_buffer) == 0:

@@ -75,10 +75,10 @@ if __name__ == "__main__":
   model = add_uncertainty(trunk, params)
 
   # DATA SPLITTING
-  lengths = np.round(len(dataset)*np.array(wandb.config["data_split_percentages"])).astype(int)
-  lengths[-1] = len(dataset)-(lengths.sum()-lengths[-1])
   if wandb.config["dataset"] == "temca":
     img_paths = dataset.img_paths
+    lengths = np.round(len(img_paths)*np.array(wandb.config["data_split_percentages"])).astype(int)
+    lengths[-1] = len(img_paths)-(lengths.sum()-lengths[-1])
     random.shuffle(img_paths)
     train_dataset = copy.deepcopy(dataset)
     calib_dataset = copy.deepcopy(dataset)
@@ -87,6 +87,8 @@ if __name__ == "__main__":
     calib_dataset.img_paths = img_paths[lengths[0]:(lengths[0]+lengths[1])]
     val_dataset.img_paths = img_paths[(lengths[0]+lengths[1]):(lengths[0]+lengths[1]+lengths[2])]
   else:
+    lengths = np.round(len(dataset)*np.array(wandb.config["data_split_percentages"])).astype(int)
+    lengths[-1] = len(dataset)-(lengths.sum()-lengths[-1])
     train_dataset, calib_dataset, val_dataset, _ = torch.utils.data.random_split(dataset, lengths.tolist()) 
   
   model = train_net(model,

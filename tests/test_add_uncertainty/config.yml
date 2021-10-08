@@ -2,7 +2,7 @@ name: "test_add_uncertainty"
 group: "test"
 output_dir: "tests/test_add_uncertainty/outputs/"
 dataset: "temca"
-data_split_percentages: [0.8, 0.1, 0.1, 0.0]
+data_split_percentages: [0.00001, 0.00001, 0.00001, 0.99997]
 model: "UNet"
 uncertainty_type: "quantiles"
 alpha: 0.1
@@ -21,7 +21,7 @@ mse_weight: 1
 num_validation_images: 100
 device: "cuda"
 device_ids: [0,1]
-epochs: 2 
+epochs: 3 
 batch_size: 16 
 lr: 0.0001
 load_from_checkpoint: True

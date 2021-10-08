@@ -43,6 +43,7 @@ def run_validation(net,
                                                                                                                                       device,
                                                                                                                                       list(range(config['num_validation_images'])),
                                                                                                                                       config)
+
       # Log everything
       wandb.log({"epoch": epoch, "iter":global_step, "examples_input": examples_input})
       wandb.log({"epoch": epoch, "iter":global_step, "Lower edge": examples_lower_edge})
@@ -102,7 +103,7 @@ def train_net(net,
       train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=0)
     except:
       train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
-    val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
+    val_loader = torch.utils.data.DataLoader(copy.deepcopy(val_dataset), batch_size=batch_size, shuffle=False, num_workers=0)
     net = net.to(device=device)
     if torch.cuda.device_count() > 1:
       print("Let's use", torch.cuda.device_count(), "GPUs!")
@@ -133,7 +134,9 @@ def train_net(net,
         net.train()
         print('epoch ' + str(epoch+1) + '\n')
         epoch_loss = 0
+        num_examples = 0
         for batch in tqdm(train_loader):
+            print("Batch!")
             labels = batch[-1].to(device=device)
             x = tuple([batch[i].to(device=device, dtype=torch.float32) for i in range(len(batch)-1)])
 
@@ -151,8 +154,9 @@ def train_net(net,
             optimizer.step()
 
             global_step += 1
+            num_examples += labels.shape[0]
 
-        wandb.log({"iter":global_step, "train_loss":epoch_loss/len(train_loader)})
+        wandb.log({"iter":global_step, "train_loss":epoch_loss/num_examples})
 
         with torch.no_grad():
           #net.load_state_dict(net.state_dict())
@@ -172,7 +176,7 @@ def train_net(net,
               print('saving checkpoint')
               if checkpoint_dir != None:
                   try:
-                      os.mkdir(checkpoint_dir)
+                      os.makedirs(checkpoint_dir,exist_ok=True)
                       logging.info('Created checkpoint directory')
                   except OSError:
                       pass
