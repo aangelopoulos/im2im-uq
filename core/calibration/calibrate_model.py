@@ -76,10 +76,10 @@ def calibrate_model(model, dataset, config):
       lambdas = torch.linspace(config['minimum_lambda'],config['maximum_lambda'],config['num_lambdas'])
     rcps_loss_fn = get_rcps_loss_fn(config)
     model = model.to(device)
-    labels = torch.cat([x[1].unsqueeze(0).to('cpu') for x in iter(copy.deepcopy(dataset))], dim=0)
+    labels = torch.cat([x[1].unsqueeze(0).to('cpu') for x in iter(dataset)], dim=0)
 
     if config['dataset'] == 'temca': 
-      outputs = torch.cat([model(x[0].unsqueeze(0).to(device)).to('cpu') for x in iter(copy.deepcopy(dataset))])
+      outputs = torch.cat([model(x[0].unsqueeze(0).to(device)).to('cpu') for x in iter(dataset)])
     else:
       outputs_shape = list(model(dataset[0][0].unsqueeze(0).to(device)).shape)
       outputs_shape[0] = len(dataset)

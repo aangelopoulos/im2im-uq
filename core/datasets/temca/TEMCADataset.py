@@ -40,6 +40,10 @@ class TEMCADataset(IterableDataset):
         # read in the first buffer
         self.patch_buffer = []
 
+    def reset(self):
+        self.img_index = 0
+        self.patch_buffer = []
+
     def get_buffer(self):
         if self.img_index + self.buffer_size > len(self.img_paths):
             if len(self.img_paths) -  self.img_index > 0 :

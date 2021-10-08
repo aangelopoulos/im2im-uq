@@ -61,9 +61,18 @@ def get_images(model,
     examples_lower_length = [wandb.Image(ll) for ll in lower_lengths]
     examples_upper_length = [wandb.Image(ul) for ul in upper_lengths]
 
+    try:
+      val_dataset.reset()
+    except:
+      pass
+
     return examples_input, examples_lower_edge, examples_prediction, examples_upper_edge, examples_ground_truth, examples_lower_length, examples_upper_length
 
 def eval_set_metrics(model, dataset, config):
+  try:
+    dataset.reset()
+  except:
+    print("dataset is map-style (not resettable)")
   with torch.no_grad():
     model.eval()
     device = config['device']

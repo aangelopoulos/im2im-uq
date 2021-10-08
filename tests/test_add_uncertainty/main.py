@@ -77,8 +77,7 @@ if __name__ == "__main__":
     #val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False, num_workers=0)
     #val_loss = eval_net(model,val_loader,config['device'])
     #print(f"Done validating! Validation Loss: {val_loss}")
-    pdb.set_trace()
-    model = calibrate_model(model, copy.deepcopy(calib_dataset), config)
+    model = calibrate_model(model, calib_dataset, config)
     print(f"Model calibrated! lambda hat = {model.lhat}")
     # Get the prediction sets and properly organize them 
     examples_input, examples_lower_edge, examples_prediction, examples_upper_edge, examples_ground_truth, examples_lower_length, examples_upper_length = get_images(model,

@@ -103,7 +103,7 @@ def train_net(net,
       train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=0)
     except:
       train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
-    val_loader = torch.utils.data.DataLoader(copy.deepcopy(val_dataset), batch_size=batch_size, shuffle=False, num_workers=0)
+    val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
     net = net.to(device=device)
     if torch.cuda.device_count() > 1:
       print("Let's use", torch.cuda.device_count(), "GPUs!")
