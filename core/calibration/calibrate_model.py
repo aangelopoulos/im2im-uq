@@ -31,9 +31,11 @@ def get_rcps_metrics_from_outputs(model, out_dataset, rcps_loss_fn, device):
   sizes = []
   residuals = []
   dataloader = DataLoader(out_dataset, batch_size=32, shuffle=False, num_workers=0) 
+  model = model.to(device)
   for batch in dataloader:
     x, labels = batch
-    sets = model.nested_sets_from_output(x) 
+    labels = labels.to(device)
+    sets = model.nested_sets_from_output(x.to(device)) 
     losses = losses + [rcps_loss_fn(sets, labels),]
     sets_full = (sets[2]-sets[0]).flatten(start_dim=1).detach().cpu().numpy()
     size_random_idxs = np.random.choice(sets_full.shape[1],size=sets_full.shape[0])

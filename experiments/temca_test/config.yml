@@ -14,7 +14,7 @@ parameters:
   dataset:
     value: "temca"
   data_split_percentages:
-    value: [0.008, 0.001, 0.001, 0.990]
+    value: [0.008, 0.0001, 0.0001, 0.9918]
   model:
     value: "UNet"
   uncertainty_type: 
@@ -24,7 +24,7 @@ parameters:
   delta: 
     value: 0.1
   num_lambdas: 
-    value: 1000
+    value: 20
   rcps_loss: 
     value: "fraction_missed"
   minimum_lambda_softmax:
@@ -32,9 +32,9 @@ parameters:
   maximum_lambda_softmax: 
     value: 1 
   minimum_lambda:
-    value: 0 
+    value: 7 
   maximum_lambda:
-    value: 6 
+    value: 10 
   device:
     value: "cuda"
   epochs:

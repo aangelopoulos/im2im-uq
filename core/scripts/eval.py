@@ -78,10 +78,10 @@ def eval_set_metrics(model, dataset, config):
     device = config['device']
     rcps_loss_fn = get_rcps_loss_fn(config)
     model = model.to(device)
-    labels = torch.cat([x[1].unsqueeze(0).to(device) for x in dataset], dim=0)
+    labels = torch.cat([x[1].unsqueeze(0).to(device).to('cpu') for x in dataset], dim=0)
 
     if config['dataset'] == 'temca':
-      outputs = torch.cat([model(x[0].unsqueeze(0).to(device)) for x in dataset], dim=0)
+      outputs = torch.cat([model(x[0].unsqueeze(0).to(device)).to('cpu') for x in dataset], dim=0)
     else:
       outputs_shape = list(model(dataset[0][0].unsqueeze(0).to(device)).shape)
       outputs_shape[0] = len(dataset)
