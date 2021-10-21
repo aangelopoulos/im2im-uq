@@ -155,7 +155,7 @@ def train_net(net,
             global_step += 1
             num_examples += labels.shape[0]
 
-        wandb.log({"iter":global_step, "train_loss":epoch_loss/num_examples})
+        wandb.log({"iter":global_step, "train_loss":epoch_loss/max(num_examples,1)})
 
         with torch.no_grad():
           #net.load_state_dict(net.state_dict())
