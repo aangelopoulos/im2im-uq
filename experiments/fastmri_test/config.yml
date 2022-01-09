@@ -10,7 +10,7 @@ parameters:
   group:
     value: "fastmri_test"
   output_dir:
-    value: "experiments/fastmri_test/outputs/"
+    value: "experiments/fastmri_test/outputs/raw"
   dataset:
     value: "fastmri"
   data_split_percentages:
@@ -52,7 +52,7 @@ parameters:
   validate_every:
     value: 1 
   num_validation_images:
-    value: 100
+    value: 10
   q_lo:
     value: 0.05
   q_hi:

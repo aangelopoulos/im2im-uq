@@ -11,7 +11,7 @@ import pdb
 
 def get_rcps_losses(model, dataset, rcps_loss_fn, lam, device):
   losses = []
-  dataloader = DataLoader(dataset, batch_size=32, shuffle=False, num_workers=0) 
+  dataloader = DataLoader(dataset, batch_size=4, shuffle=False, num_workers=0) 
   for batch in dataloader:
     sets = model.nested_sets_from_output(batch,lam) 
     losses = losses + [rcps_loss_fn(sets, labels),]
@@ -19,7 +19,7 @@ def get_rcps_losses(model, dataset, rcps_loss_fn, lam, device):
 
 def get_rcps_losses_from_outputs(model, out_dataset, rcps_loss_fn, lam, device):
   losses = []
-  dataloader = DataLoader(out_dataset, batch_size=32, shuffle=False, num_workers=0) 
+  dataloader = DataLoader(out_dataset, batch_size=4, shuffle=False, num_workers=0) 
   for batch in dataloader:
     x, labels = batch
     sets = model.nested_sets_from_output(x,lam) 
@@ -30,7 +30,7 @@ def get_rcps_metrics_from_outputs(model, out_dataset, rcps_loss_fn, device):
   losses = []
   sizes = []
   residuals = []
-  dataloader = DataLoader(out_dataset, batch_size=32, shuffle=False, num_workers=0) 
+  dataloader = DataLoader(out_dataset, batch_size=4, shuffle=False, num_workers=0) 
   model = model.to(device)
   for batch in dataloader:
     x, labels = batch
@@ -72,6 +72,7 @@ def calibrate_model(model, dataset, config):
     alpha = config['alpha']
     delta = config['delta']
     device = config['device']
+    print("Initialize lambdas")
     if config["uncertainty_type"] == "softmax":
       lambdas = torch.linspace(config['minimum_lambda_softmax'],config['maximum_lambda_softmax'],config['num_lambdas'])
     else:
@@ -79,18 +80,21 @@ def calibrate_model(model, dataset, config):
     rcps_loss_fn = get_rcps_loss_fn(config)
     model = model.to(device)
     labels = torch.cat([x[1].unsqueeze(0).to('cpu') for x in iter(dataset)], dim=0)
+    print("Labels initialized.")
 
     if config['dataset'] == 'temca': 
       outputs = torch.cat([model(x[0].unsqueeze(0).to(device)).to('cpu') for x in iter(dataset)])
     else:
       outputs_shape = list(model(dataset[0][0].unsqueeze(0).to(device)).shape)
       outputs_shape[0] = len(dataset)
-      outputs = torch.zeros(tuple(outputs_shape),device=device)
+      outputs = torch.zeros(tuple(outputs_shape),device='cpu')
+      print("Computing outputs")
       for i in range(len(dataset)):
-        outputs[i,:,:,:,:] = model(dataset[i][0].unsqueeze(0).to(device))
-    out_dataset = TensorDataset(outputs,labels)
+        outputs[i,:,:,:,:] = model(dataset[i][0].unsqueeze(0).to(device)).cpu()
+    out_dataset = TensorDataset(outputs,labels.cpu())
     dlambda = lambdas[1]-lambdas[0]
     model.set_lhat(lambdas[-1]+dlambda-1e-9)
+    print("Computing losses")
     for lam in reversed(lambdas):
       losses = get_rcps_losses_from_outputs(model, out_dataset, rcps_loss_fn, lam-dlambda, device)
       Rhat = losses.mean()

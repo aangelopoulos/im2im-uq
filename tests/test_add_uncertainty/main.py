@@ -65,7 +65,7 @@ if __name__ == "__main__":
                       train_dataset,
                       val_dataset,
                       config['device'],
-                      config['epochs'],
+                      1,
                       config['batch_size'],
                       config['lr'],
                       config['load_from_checkpoint'],

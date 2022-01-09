@@ -4,6 +4,7 @@ import wandb
 import random
 import copy
 import numpy as np
+import pickle as pkl
 import torch
 from torch.utils.data import Dataset, DataLoader
 import torchvision 
@@ -34,12 +35,23 @@ if __name__ == "__main__":
   print("Entered main method.")
   wandb.init() 
   print("wandb init.")
+  # Check if results exist already
+  output_dir = wandb.config['output_dir'] 
+  results_fname = output_dir + f'/results_' + wandb.config['dataset'] + "_" + wandb.config['uncertainty_type'] + "_" + str(wandb.config['batch_size']) + "_" + str(wandb.config['lr']) + "_" + wandb.config['input_normalization'] + "_" + wandb.config['output_normalization'].replace('.','_') + '.pkl'
+  if os.path.exists(results_fname):
+    print(f"Results already precomputed and stored in {results_fname}!")
+    os._exit(os.EX_OK) 
+  else:
+    print("Computing the results from scratch!")
+  # Otherwise compute results
   curr_method = wandb.config["uncertainty_type"]
   curr_lr = wandb.config["lr"]
   curr_dataset = wandb.config["dataset"]
   wandb.run.name = f"{curr_method}, {curr_dataset}, lr{curr_lr}"
   wandb.run.save()
   params = { key: wandb.config[key] for key in wandb.config.keys() }
+  batch_size = wandb.config['batch_size']//4 if wandb.wandb.config['uncertainty_type'] == 'softmax' else wandb.config['batch_size']
+  params['batch_size'] = batch_size
   print("wandb save run.")
 
   # DATASET LOADING
@@ -52,7 +64,7 @@ if __name__ == "__main__":
     path = '/clusterfs/abc/angelopoulos/care/Isotropic_Drosophila/train_data/data_label.npz'
     dataset = CAREDrosophilaDataset(path, num_instances='all', normalize=wandb.config["output_normalization"])
   elif wandb.config["dataset"] == "fastmri":
-    path = '/clusterfs/abc/amit/fastmri/knee/singlecoil_train/'
+    path = '/clusterfs/fiona/angelopoulos/singlecoil_train/'
     mask_info = {'type': 'equispaced', 'center_fraction' : [0.08], 'acceleration' : [4]}
     dataset = FastMRIDataset(path, normalize_input=wandb.config["input_normalization"], normalize_output = wandb.config["output_normalization"], mask_info=mask_info)
     dataset = normalize_dataset(dataset)
@@ -96,7 +108,7 @@ if __name__ == "__main__":
                     val_dataset,
                     wandb.config['device'],
                     wandb.config['epochs'],
-                    wandb.config['batch_size'],
+                    batch_size,
                     wandb.config['lr'],
                     wandb.config['load_from_checkpoint'],
                     wandb.config['checkpoint_dir'],
@@ -127,13 +139,29 @@ if __name__ == "__main__":
     wandb.log({"epoch": wandb.config['epochs']+1, "Lower length": examples_ll})
     wandb.log({"epoch": wandb.config['epochs']+1, "Upper length": examples_ul})
     # Get the risk and set size
+    print("GET THE RISK AND SET SIZE")
     risk, sizes, spearman, stratified_risk = eval_set_metrics(model, val_dataset, params)
+    print("DONE")
 
-    data = [[label, val] for (label, val) in zip(["Easy","Easy-medium", "Medium-Hard", "Hard"], stratified_risk.numpy())]
-    table = wandb.Table(data=data, columns = ["Difficulty", "Empirical Risk"])
-    wandb.log({"Size-Stratified Risk Barplot" : wandb.plot.bar(table, "Difficulty","Empirical Risk", title="Size-Stratified Risk") })
+    #data = [[label, val] for (label, val) in zip(["Easy","Easy-medium", "Medium-Hard", "Hard"], stratified_risk.numpy())]
+    #table = wandb.Table(data=data, columns = ["Difficulty", "Empirical Risk"])
+    #wandb.log({"Size-Stratified Risk Barplot" : wandb.plot.bar(table, "Difficulty","Empirical Risk", title="Size-Stratified Risk") })
 
     print(f"Risk: {risk}  |  Mean size: {sizes.mean()}  |  Spearman: {spearman}  |  Size-stratified risk: {stratified_risk}  ")
     wandb.log({"epoch": wandb.config['epochs']+1, "risk": risk, "mean_size":sizes.mean(), "Spearman":spearman, "Size-Stratified Risk":stratified_risk})
+    
+    # Save outputs for later plotting
+    print("Saving outputs for plotting")
+    if output_dir != None:
+        try:
+            os.makedirs(output_dir,exist_ok=True)
+            print('Created output directory')
+        except OSError:
+            pass
+        results = { "risk": risk, "sizes": sizes, "spearman": spearman, "size-stratified risk": stratified_risk, "examples_input": examples_input, "examples_lower_edge": examples_lower_edge, "examples_prediction": examples_prediction, "examples_upper_edge": examples_upper_edge, "examples_ground_truth": examples_ground_truth, "examples_ll": examples_ll, "examples_ul": examples_ul }
+        with open(results_fname, 'wb') as handle:
+          pkl.dump(results, handle, protocol=pkl.HIGHEST_PROTOCOL)
+
+        print(f'Results saved to file {results_fname}!')
 
     print(f"Done with {str(params)}")

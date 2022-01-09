@@ -85,9 +85,9 @@ def train_net(net,
           print(f"Model loaded from checkpoint {checkpoint_final_path}")
           return net
         except:
-          print(f"Final model cannot be loaded from checkpoint. Training now, for {epochs} epochs.")
+          print(f"Final model cannot be loaded from checkpoint {checkpoint_final_path}. Training now, for {epochs} epochs.")
       else:
-        print(f"Final model cannot be loaded from checkpoint. Training now, for {epochs} epochs.")
+        print(f"Final model cannot be loaded from checkpoint {checkpoint_final_path}. Training now, for {epochs} epochs.")
         for e in reversed(range(epochs)):
           checkpoint_intermediate_path = checkpoint_dir + f'/CP_epoch{e}_' + config['dataset'] + "_" + config['uncertainty_type'] + "_" + str(config['batch_size']) + "_" + str(config['lr']) + "_" + config['input_normalization'] + "_" + config['output_normalization'].replace('.','_') + '.pth'
           if os.path.exists(checkpoint_intermediate_path):

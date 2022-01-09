@@ -1,3 +1,4 @@
+experiments/fastmri_test/outputs/
 # Any pytorch model
 *.pth
 # Weights and Biases

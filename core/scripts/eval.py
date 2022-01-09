@@ -91,7 +91,9 @@ def eval_set_metrics(model, dataset, config):
         outputs[i,:,:,:,:] = model(dataset[i][0].unsqueeze(0).to(device))
     out_dataset = TensorDataset(outputs,labels)
 
+    print("GET RCPS METRICS FROM OUTPUTS")
     losses, sizes, spearman, stratified_risks = get_rcps_metrics_from_outputs(model, out_dataset, rcps_loss_fn, device)
+    print("DONE!")
     return losses.mean(), sizes, spearman, stratified_risks
 
 def eval_net(net, loader, device):
