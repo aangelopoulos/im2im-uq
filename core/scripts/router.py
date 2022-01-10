@@ -13,7 +13,7 @@ import warnings
 import yaml
 
 from core.scripts.train import train_net
-from core.scripts.eval import get_images, eval_net, eval_set_metrics 
+from core.scripts.eval import get_images, eval_net, get_loss_table, eval_set_metrics 
 from core.models.add_uncertainty import add_uncertainty
 from core.calibration.calibrate_model import calibrate_model
 from core.utils import fix_randomness 
@@ -122,14 +122,27 @@ if __name__ == "__main__":
     #val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False, num_workers=0)
     #val_loss = eval_net(model,val_loader,wandb.config['device'])
     #print(f"Done validating! Validation Loss: {val_loss}")
-    model = calibrate_model(model, calib_dataset, params)
+    # Save the loss tables for later experiments
+    print("Get the validation loss table.") # Doing this first, so I can save it for later experiments.
+    val_loss_table = get_loss_table(model,val_dataset,wandb.config)
+    print("Calibrate the model.")
+    model, calib_loss_table = calibrate_model(model, calib_dataset, params)
     print(f"Model calibrated! lambda hat = {model.lhat}")
+    # Save the loss tables
+    if output_dir != None:
+        try:
+            os.makedirs(output_dir,exist_ok=True)
+            print('Created output directory')
+        except OSError:
+            pass
+    torch.save(torch.cat((calib_loss_table,val_loss_table),dim=0),output_dir + f'/loss_table_' + wandb.config['dataset'] + "_" + wandb.config['uncertainty_type'] + "_" + str(wandb.config['batch_size']) + "_" + str(wandb.config['lr']) + "_" + wandb.config['input_normalization'] + "_" + wandb.config['output_normalization'].replace('.','_') + '.pth')
+    print("Loss table saved!")
     # Get the prediction sets and properly organize them 
-    examples_input, examples_lower_edge, examples_prediction, examples_upper_edge, examples_ground_truth, examples_ll, examples_ul = get_images(model,
-                                                                                                                                     val_dataset,
-                                                                                                                                     wandb.config['device'],
-                                                                                                                                     list(range(wandb.config['num_validation_images'])),
-                                                                                                                                     params)
+    examples_input, examples_lower_edge, examples_prediction, examples_upper_edge, examples_ground_truth, examples_ll, examples_ul, raw_images_dict = get_images(model,
+                                                                                                                                                        val_dataset,
+                                                                                                                                                         wandb.config['device'],
+                                                                                                                                                         list(range(wandb.config['num_validation_images'])),
+                                                                                                                                                         params)
     # Log everything
     wandb.log({"epoch": wandb.config['epochs']+1, "examples_input": examples_input})
     wandb.log({"epoch": wandb.config['epochs']+1, "Lower edge": examples_lower_edge})
@@ -142,6 +155,7 @@ if __name__ == "__main__":
     print("GET THE RISK AND SET SIZE")
     risk, sizes, spearman, stratified_risk = eval_set_metrics(model, val_dataset, params)
     print("DONE")
+
 
     #data = [[label, val] for (label, val) in zip(["Easy","Easy-medium", "Medium-Hard", "Hard"], stratified_risk.numpy())]
     #table = wandb.Table(data=data, columns = ["Difficulty", "Empirical Risk"])
@@ -158,7 +172,8 @@ if __name__ == "__main__":
             print('Created output directory')
         except OSError:
             pass
-        results = { "risk": risk, "sizes": sizes, "spearman": spearman, "size-stratified risk": stratified_risk, "examples_input": examples_input, "examples_lower_edge": examples_lower_edge, "examples_prediction": examples_prediction, "examples_upper_edge": examples_upper_edge, "examples_ground_truth": examples_ground_truth, "examples_ll": examples_ll, "examples_ul": examples_ul }
+        results = { "risk": risk, "sizes": sizes, "spearman": spearman, "size-stratified risk": stratified_risk }
+        results = results.update(raw_images_dict)
         with open(results_fname, 'wb') as handle:
           pkl.dump(results, handle, protocol=pkl.HIGHEST_PROTOCOL)
 

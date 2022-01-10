@@ -34,7 +34,7 @@ def plot_spearman(methodnames,results_list):
   plt.savefig('outputs/fastmri-spearman.pdf')
 
 def plot_size_violins(methodnames,results_list):
-  plt.figure()
+  plt.figure(figsize=(5,5))
   sns.set_palette('pastel')
   # Crop sizes to 99%
   for results in results_list:
@@ -48,24 +48,26 @@ def plot_size_violins(methodnames,results_list):
   plt.savefig('outputs/fastmri-sizes.pdf')
 
 def plot_ssr(methodnames,results_list):
-  plt.figure()
+  plt.figure(figsize=(4,4))
   sns.set_palette(sns.light_palette("salmon"))
   df = pd.DataFrame({'Difficulty': len(results_list)*['Easy', 'Easy-Medium', 'Medium-Hard', 'Hard'], 'Risk' : torch.cat([results['size-stratified risk'] for results in results_list]).tolist(), 'Method': [method.replace(' ','\n') for method in methodnames for i in range(results_list[0]['size-stratified risk'].shape[0])]})
   g = sns.catplot(data=df, kind='bar', x='Method', y='Risk', hue='Difficulty',legend=False)
   sns.despine(top=True, right=True)
   plt.legend(loc='upper right')
   plt.xlabel('')
+  plt.locator_params(axis="y", nbins=5)
   plt.tight_layout()
   plt.savefig('outputs/fastmri-size-stratified-risk.pdf')
 
 def generate_plots():
   methodnames = ['Gaussian','Residual Magnitude','Quantile Regression']
-  filenames = ['outputs/raw/results_fastmri_gaussian_78_0.0001_standard_standard.pkl','outputs/raw/results_fastmri_residual_magnitude_78_0.0001_standard_standard.pkl','outputs/raw/results_fastmri_quantiles_78_0.0001_standard_standard.pkl']
+  filenames = ['outputs/old_raw/results_fastmri_gaussian_78_0.0001_standard_standard.pkl','outputs/old_raw/results_fastmri_residual_magnitude_78_0.0001_standard_standard.pkl','outputs/old_raw/results_fastmri_quantiles_78_0.0001_standard_standard.pkl']
   # Load results
   results_list = []
   for filename in filenames:
     with open(filename, 'rb') as handle:
       results_list = results_list + [CPU_Unpickler(handle).load(),]
+  pdb.set_trace()
   # Plot spearman correlations
   plot_spearman(methodnames,results_list)
   # Plot size-stratified risks 

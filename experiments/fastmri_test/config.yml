@@ -18,7 +18,7 @@ parameters:
   model:
     value: "UNet"
   uncertainty_type: 
-    values: ["quantiles", "softmax", "quantiles_l1", "residual_magnitude", "residual_magnitude_l1", "gaussian"]
+    values: ["quantiles", "residual_magnitude", "gaussian"]
   alpha: 
     value: 0.1
   delta: 
@@ -28,9 +28,9 @@ parameters:
   rcps_loss: 
     value: "fraction_missed"
   minimum_lambda_softmax:
-    value: 0.99 
+    value: 0 
   maximum_lambda_softmax: 
-    value: 1 
+    value: 2 
   minimum_lambda:
     value: 0 
   maximum_lambda:
@@ -38,7 +38,7 @@ parameters:
   device:
     value: "cuda"
   epochs:
-    value: 10 
+    value: 10
   batch_size:
     value: 78 
   lr:

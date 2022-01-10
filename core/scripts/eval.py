@@ -5,7 +5,7 @@ import torch
 import torch.nn.functional as F
 from tqdm import tqdm
 import matplotlib.pyplot as plt
-from torch.utils.data import TensorDataset
+from torch.utils.data import TensorDataset, DataLoader
 from core.calibration.calibrate_model import get_rcps_loss_fn, get_rcps_metrics_from_outputs
 from core.utils import standard_to_minmax
 import wandb
@@ -43,8 +43,15 @@ def get_images(model,
     except:
       pass
 
-    examples_input = [wandb.Image(transform_output(val_dataset[img_idx][0])) for img_idx in idx_iterator]
     examples_output = [model.nested_sets((val_dataset[img_idx][0].unsqueeze(0).to(device),),lam=lam) for img_idx in idx_iterator]
+    raw_images_dict = {'inputs': [val_dataset[img_idx][0] for img_idx in idx_iterator], 
+                       'outputs': [model.nested_sets((val_dataset[img_idx][0].unsqueeze(0).to(device),),lam=lam).cpu() for img_idx in idx_iterator],
+                       'predictions': [example[1] for example in examples_output], 
+                       'lower_edge': [example[0] for example in examples_output], 
+                       'upper_edge': [example[2] for example in examples_output] 
+                      }
+
+    examples_input = [wandb.Image(transform_output(val_dataset[img_idx][0])) for img_idx in idx_iterator]
     examples_lower_edge = [wandb.Image(transform_output(example[0])) for example in examples_output]
     examples_prediction = [wandb.Image(transform_output(example[1])) for example in examples_output]
     examples_upper_edge = [wandb.Image(transform_output(example[2])) for example in examples_output]
@@ -66,7 +73,51 @@ def get_images(model,
     except:
       pass
 
-    return examples_input, examples_lower_edge, examples_prediction, examples_upper_edge, examples_ground_truth, examples_lower_length, examples_upper_length
+    return examples_input, examples_lower_edge, examples_prediction, examples_upper_edge, examples_ground_truth, examples_lower_length, examples_upper_length, raw_images_dict
+
+def get_loss_table(model, dataset, config):
+  try:
+    dataset.reset()
+  except:
+    print("dataset is map-style (not resettable)")
+  with torch.no_grad():
+    if config["uncertainty_type"] == "softmax":
+      lambdas = torch.linspace(config['minimum_lambda_softmax'],config['maximum_lambda_softmax'],config['num_lambdas'])
+    else:
+      lambdas = torch.linspace(config['minimum_lambda'],config['maximum_lambda'],config['num_lambdas'])
+    model.eval()
+    device = config['device']
+    rcps_loss_fn = get_rcps_loss_fn(config)
+    model = model.to(device)
+    labels = torch.cat([x[1].unsqueeze(0).to(device).to('cpu') for x in dataset], dim=0).cpu()
+
+    if config['dataset'] == 'temca':
+      outputs = torch.cat([model(x[0].unsqueeze(0).to(device)).to('cpu') for x in dataset], dim=0)
+    else:
+      outputs_shape = list(model(dataset[0][0].unsqueeze(0).to(device)).shape)
+      outputs_shape[0] = len(dataset)
+      outputs = torch.zeros(tuple(outputs_shape),device='cpu')
+      
+      for i in range(len(dataset)):
+        print(f"Validation output {i}")
+        outputs[i,:,:,:,:] = model(dataset[i][0].unsqueeze(0).to(device)).cpu()
+    out_dataset = TensorDataset(outputs,labels)
+
+    print("GET LOSS TABLE FROM OUTPUTS")
+    loss_table = torch.zeros((outputs.shape[0],config['num_lambdas']))
+    dataloader = DataLoader(out_dataset, batch_size=4, shuffle=False, num_workers=0) 
+    model = model.to(device)
+    i = 0
+    for batch in dataloader:
+      x, labels = batch
+      labels = labels.to(device)
+      for j in range(lambdas.shape[0]):
+        sets = model.nested_sets_from_output(x.to(device), lam=lambdas[j]) 
+        loss_table[i:i+x.shape[0],j] = rcps_loss_fn(sets, labels)
+      i += x.shape[0]
+    print("DONE!")
+    return loss_table 
+
 
 def eval_set_metrics(model, dataset, config):
   try:
@@ -78,17 +129,18 @@ def eval_set_metrics(model, dataset, config):
     device = config['device']
     rcps_loss_fn = get_rcps_loss_fn(config)
     model = model.to(device)
-    labels = torch.cat([x[1].unsqueeze(0).to(device).to('cpu') for x in dataset], dim=0)
+    labels = torch.cat([x[1].unsqueeze(0).to(device).to('cpu') for x in dataset], dim=0).cpu()
 
     if config['dataset'] == 'temca':
       outputs = torch.cat([model(x[0].unsqueeze(0).to(device)).to('cpu') for x in dataset], dim=0)
     else:
       outputs_shape = list(model(dataset[0][0].unsqueeze(0).to(device)).shape)
       outputs_shape[0] = len(dataset)
-      outputs = torch.zeros(tuple(outputs_shape),device=device)
+      outputs = torch.zeros(tuple(outputs_shape),device='cpu')
       
       for i in range(len(dataset)):
-        outputs[i,:,:,:,:] = model(dataset[i][0].unsqueeze(0).to(device))
+        print(f"Validation output {i}")
+        outputs[i,:,:,:,:] = model(dataset[i][0].unsqueeze(0).to(device)).cpu()
     out_dataset = TensorDataset(outputs,labels)
 
     print("GET RCPS METRICS FROM OUTPUTS")
