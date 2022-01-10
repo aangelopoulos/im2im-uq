@@ -44,8 +44,9 @@ def get_images(model,
       pass
 
     examples_output = [model.nested_sets((val_dataset[img_idx][0].unsqueeze(0).to(device),),lam=lam) for img_idx in idx_iterator]
+    examples_gt = [val_dataset[img_idx][1] for img_idx in idx_iterator]
     raw_images_dict = {'inputs': [val_dataset[img_idx][0] for img_idx in idx_iterator], 
-                       'outputs': [model.nested_sets((val_dataset[img_idx][0].unsqueeze(0).to(device),),lam=lam).cpu() for img_idx in idx_iterator],
+                       'gt': examples_gt,
                        'predictions': [example[1] for example in examples_output], 
                        'lower_edge': [example[0] for example in examples_output], 
                        'upper_edge': [example[2] for example in examples_output] 

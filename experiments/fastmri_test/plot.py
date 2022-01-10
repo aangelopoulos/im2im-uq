@@ -61,13 +61,13 @@ def plot_ssr(methodnames,results_list):
 
 def generate_plots():
   methodnames = ['Gaussian','Residual Magnitude','Quantile Regression']
-  filenames = ['outputs/old_raw/results_fastmri_gaussian_78_0.0001_standard_standard.pkl','outputs/old_raw/results_fastmri_residual_magnitude_78_0.0001_standard_standard.pkl','outputs/old_raw/results_fastmri_quantiles_78_0.0001_standard_standard.pkl']
+  filenames = ['outputs/raw/results_fastmri_gaussian_78_0.001_standard_standard.pkl','outputs/raw/results_fastmri_residual_magnitude_78_0.001_standard_standard.pkl','outputs/raw/results_fastmri_quantiles_78_0.001_standard_standard.pkl']
   # Load results
   results_list = []
   for filename in filenames:
     with open(filename, 'rb') as handle:
+      pdb.set_trace()
       results_list = results_list + [CPU_Unpickler(handle).load(),]
-  pdb.set_trace()
   # Plot spearman correlations
   plot_spearman(methodnames,results_list)
   # Plot size-stratified risks 

@@ -173,7 +173,7 @@ if __name__ == "__main__":
         except OSError:
             pass
         results = { "risk": risk, "sizes": sizes, "spearman": spearman, "size-stratified risk": stratified_risk }
-        results = results.update(raw_images_dict)
+        results.update(raw_images_dict)
         with open(results_fname, 'wb') as handle:
           pkl.dump(results, handle, protocol=pkl.HIGHEST_PROTOCOL)
 
