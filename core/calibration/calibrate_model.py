@@ -53,6 +53,16 @@ def get_rcps_metrics_from_outputs(model, out_dataset, rcps_loss_fn, device):
   stratified_risks = torch.tensor([losses[buckets == bucket].mean() for bucket in range(size_bins.shape[0])])
   print(f"Model output shape: {x.shape}, label shape: {labels.shape}, Sets shape: {sets[2].shape}, sizes: {sizes}, size_bins:{size_bins}, stratified_risks: {stratified_risks}")
   return losses, sizes, spearman, stratified_risks 
+
+def evaluate_from_loss_table(loss_table,n,alpha,delta):
+  with torch.no_grad():
+    perm = torch.randperm(loss_table.shape[0])
+    loss_table = loss_table[perm]
+    calib_table, val_table = loss_table[:n], loss_table[n:]
+    Rhats = calib_table.mean(dim=0)
+    RhatPlus = torch.tensor([HB_mu_plus(Rhat, n, delta) for Rhat in Rhats])
+    idx_lambda = (RhatPlus <= delta).nonzero()[0]
+    return val_table[:,idx_lambda].mean()
   
 def fraction_missed_loss(pset,label):
   misses = (pset[0].squeeze() > label.squeeze()).float() + (pset[2].squeeze() < label.squeeze()).float()
