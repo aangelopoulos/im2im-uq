@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pickle as pkl
 from core.calibration.calibrate_model import evaluate_from_loss_table
+from core.scripts.eval import transform_output 
 from tqdm import tqdm
 import pdb
 
@@ -18,7 +19,7 @@ class CPU_Unpickler(pkl.Unpickler):
       return super().find_class(module, name)
 
 def plot_spearman(methodnames,results_list):
-  plt.figure(figsize=(8,2.5))
+  plt.figure(figsize=(12,1.75))
   sns.set_palette('pastel')
   # Crop sizes to 99%
   spearmans = [results['spearman'] for results in results_list]
@@ -30,7 +31,7 @@ def plot_spearman(methodnames,results_list):
   plt.gca().set_yticks([])
   plt.gca().set_yticklabels([])
   plt.ylim([-0.1,1])
-  plt.legend()
+  plt.legend(bbox_to_anchor=(-0.5, 0.5))
   plt.gca().tick_params(axis=u'both', which=u'both',length=0)
   plt.xlabel("Spearman rank correlation between heuristic and true residual")
   plt.tight_layout()
@@ -95,10 +96,20 @@ def plot_risks(methodnames,loss_table_list,n,alpha,delta,num_trials=100):
   plt.tight_layout()
   plt.savefig('outputs/fastmri-risks.pdf',bbox_inches="tight")
 
+def plot_images_uq(results):
+  pdb.set_trace()
+  os.makedirs('outputs/images/',exist_ok=True)
+  for i in range(len(results['prediction'])):   
+    foldername = f'outputs/images/{i}/'
+    os.makedirs(foldername,exist_ok=True)
+    prediction = transform_output(results['prediction'])
+    set_sizes = results['upper_edge'][i] - results['lower_edge'][i] 
+  print("Hi!")
+
 def generate_plots():
   methodnames = ['Gaussian','Residual Magnitude','Quantile Regression']
-  results_filenames = ['outputs/old_raw/results_fastmri_gaussian_78_0.001_standard_standard.pkl','outputs/old_raw/results_fastmri_residual_magnitude_78_0.001_standard_standard.pkl','outputs/old_raw/results_fastmri_quantiles_78_0.001_standard_standard.pkl']
-  loss_tables_filenames = ['outputs/raw/loss_table_fastmri_gaussian_78_0.001_standard_standard.pth','outputs/raw/loss_table_fastmri_residual_magnitude_78_0.001_standard_standard.pth','outputs/raw/loss_table_fastmri_quantiles_78_0.001_standard_standard.pth']
+  results_filenames = ['outputs/raw/results_fastmri_gaussian_78_0.0001_standard_standard.pkl','outputs/raw/results_fastmri_residual_magnitude_78_0.0001_standard_standard.pkl','outputs/raw/results_fastmri_quantiles_78_0.0001_standard_standard.pkl']
+  loss_tables_filenames = ['outputs/raw/loss_table_fastmri_gaussian_78_0.0001_standard_standard.pth','outputs/raw/loss_table_fastmri_residual_magnitude_78_0.0001_standard_standard.pth','outputs/raw/loss_table_fastmri_quantiles_78_0.0001_standard_standard.pth']
   # Load results
   results_list = []
   for filename in results_filenames:
@@ -118,6 +129,8 @@ def generate_plots():
   plot_ssr(methodnames,results_list)
   # Plot size distribution
   plot_size_violins(methodnames,results_list)
+  # Plot the MRI images (only quantile regression)
+  plot_images_uq(results_list[-1])
 
 if __name__ == "__main__":
   generate_plots()
