@@ -3,13 +3,20 @@ sys.path.insert(1, os.path.join(sys.path[0], '../../'))
 import numpy as np
 import pandas as pd
 import torch
+from matplotlib import cm
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pickle as pkl
 from core.calibration.calibrate_model import evaluate_from_loss_table
 from core.scripts.eval import transform_output 
 from tqdm import tqdm
+from PIL import Image
 import pdb
+
+def normalize_01(x):
+  x = x - x.min()
+  x = x / x.max()
+  return x
 
 class CPU_Unpickler(pkl.Unpickler):
   def find_class(self, module, name):
@@ -97,14 +104,25 @@ def plot_risks(methodnames,loss_table_list,n,alpha,delta,num_trials=100):
   plt.savefig('outputs/fastmri-risks.pdf',bbox_inches="tight")
 
 def plot_images_uq(results):
-  pdb.set_trace()
+  uq_cmap = cm.get_cmap('coolwarm',50)
   os.makedirs('outputs/images/',exist_ok=True)
-  for i in range(len(results['prediction'])):   
+  for i in range(len(results['predictions'])):   
     foldername = f'outputs/images/{i}/'
     os.makedirs(foldername,exist_ok=True)
-    prediction = transform_output(results['prediction'])
-    set_sizes = results['upper_edge'][i] - results['lower_edge'][i] 
-  print("Hi!")
+    input_image = normalize_01(results['inputs'][i].squeeze())
+    prediction = normalize_01(results['predictions'][i].squeeze())
+    set_sizes = (results['upper_edge'][i] - results['lower_edge'][i]).squeeze()
+    mixed_output = 0.3*torch.tensor(uq_cmap(normalize_01(set_sizes.squeeze()))) + 0.7*prediction.unsqueeze(2)
+    im = Image.fromarray((255*input_image.numpy()).astype('uint8')).convert('RGB')
+    im.save(foldername + "input.png")
+    im = Image.fromarray((255*prediction.numpy()).astype('uint8')).convert('RGB')
+    im.save(foldername + "prediction.png")
+    im = Image.fromarray((255*normalize_01(set_sizes).numpy()).astype('uint8')).convert('RGB')
+    im.save(foldername + "set_sizes.png")
+    im = Image.fromarray((255*normalize_01(results['gt'][i].squeeze()).numpy()).astype('uint8')).convert('RGB')
+    im.save(foldername + "gt.png")
+    im = Image.fromarray((255*mixed_output.numpy()).astype('uint8')).convert('RGB')
+    im.save(foldername + "mixed_output.png")
 
 def generate_plots():
   methodnames = ['Gaussian','Residual Magnitude','Quantile Regression']
