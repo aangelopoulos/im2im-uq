@@ -1,4 +1,5 @@
 experiments/fastmri_test/outputs/
+experiments/temca_test/outputs/
 # Any pytorch model
 *.pth
 # Weights and Biases
