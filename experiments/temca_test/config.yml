@@ -10,7 +10,7 @@ parameters:
   group:
     value: "temca_test"
   output_dir:
-    value: "experiments/temca_test/outputs/"
+    value: "experiments/temca_test/outputs/raw"
   dataset:
     value: "temca"
   data_split_percentages:
@@ -18,13 +18,13 @@ parameters:
   model:
     value: "UNet"
   uncertainty_type: 
-    values: ["quantiles", "softmax", "quantiles_l1", "residual_magnitude", "residual_magnitude_l1", "gaussian"]
+    values: ["quantiles",]
   alpha: 
     value: 0.1
   delta: 
     value: 0.1
   num_lambdas: 
-    value: 20
+    value: 100
   rcps_loss: 
     value: "fraction_missed"
   minimum_lambda_softmax:
@@ -42,7 +42,7 @@ parameters:
   batch_size:
     value: 16 
   lr:
-    values: [0.001, 0.0001]
+    values: [0.0001,0.001]
   load_from_checkpoint: 
     value: True
   checkpoint_dir:
