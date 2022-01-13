@@ -52,8 +52,8 @@ def plot_size_violins(methodnames,results_list):
   # Crop sizes to 99%
   for results in results_list:
     results['sizes'] = torch.clamp(results['sizes'], min=0, max=2)
-  df = pd.DataFrame({'Interval Size' : torch.cat([results['sizes'] for results in results_list]).tolist(), 'Method': [method.replace(' ','\n') for method in methodnames for i in range(results_list[0]['sizes'].shape[0])]})
-  g = sns.violinplot(data=df, x='Method', y='Interval Size', cut=0)
+  df = pd.DataFrame({'Interval Length' : torch.cat([results['sizes'] for results in results_list]).tolist(), 'Method': [method.replace(' ','\n') for method in methodnames for i in range(results_list[0]['sizes'].shape[0])]})
+  g = sns.violinplot(data=df, x='Method', y='Interval Length', cut=0)
   sns.despine(top=True, right=True)
   plt.yticks([0,1,2])
   plt.xlabel('')
@@ -61,17 +61,20 @@ def plot_size_violins(methodnames,results_list):
   plt.tight_layout()
   plt.savefig('outputs/fastmri-sizes.pdf',bbox_inches="tight")
 
-def plot_ssr(methodnames,results_list):
+def plot_ssr(methodnames,results_list,alpha):
   plt.figure(figsize=(4,4))
   sns.set(font_scale=1.35)
   sns.set_style("white")
   sns.set_palette(sns.light_palette("salmon"))
-  df = pd.DataFrame({'Difficulty': len(results_list)*['Easy', 'Easy-Medium', 'Medium-Hard', 'Hard'], 'Risk' : torch.cat([results['size-stratified risk'] for results in results_list]).tolist(), 'Method': [method.replace(' ','\n') for method in methodnames for i in range(results_list[0]['size-stratified risk'].shape[0])]})
-  g = sns.catplot(data=df, kind='bar', x='Method', y='Risk', hue='Difficulty',legend=False)
+  df = pd.DataFrame({'Interval Length': len(results_list)*['Short', 'Short-Medium', 'Medium-Long', 'Long'], 'Size-Stratified Risk' : torch.cat([results['size-stratified risk'] for results in results_list]).tolist(), 'Method': [method.replace(' ','\n') for method in methodnames for i in range(results_list[0]['size-stratified risk'].shape[0])]})
+  g = sns.catplot(data=df, kind='bar', x='Method', y='Size-Stratified Risk', hue='Interval Length',legend=False)
   sns.despine(top=True, right=True)
   plt.legend(loc='upper right')
   plt.xlabel('')
+  plt.ylim([None,0.2])
   plt.locator_params(axis="y", nbins=5)
+  plt.gca().axhline(y=alpha, color='#888888', linewidth=2, linestyle='dashed')
+  plt.text(2,alpha+0.005,r'$\alpha$',color='#888888')
   plt.tight_layout()
   plt.savefig('outputs/fastmri-size-stratified-risk.pdf',bbox_inches="tight")
 
@@ -100,6 +103,7 @@ def plot_risks(methodnames,loss_table_list,n,alpha,delta,num_trials=100):
   plt.ylim([0.07,None])
   plt.xlabel('')
   plt.locator_params(axis="y", nbins=5)
+  plt.text(2.2,alpha-0.0018,r'$\alpha$',color='#888888')
   plt.tight_layout()
   plt.savefig('outputs/fastmri-risks.pdf',bbox_inches="tight")
 
@@ -144,7 +148,7 @@ def generate_plots():
   # Plot spearman correlations
   plot_spearman(methodnames,results_list)
   # Plot size-stratified risks 
-  plot_ssr(methodnames,results_list)
+  plot_ssr(methodnames,results_list,alpha)
   # Plot size distribution
   plot_size_violins(methodnames,results_list)
   # Plot the MRI images (only quantile regression)
