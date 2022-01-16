@@ -1,7 +1,7 @@
 name: "test_add_uncertainty"
 group: "test"
 output_dir: "tests/test_add_uncertainty/outputs/"
-dataset: "temca"
+dataset: "bsbcm"
 data_split_percentages: [0.008, 0.0001, 0.0001, 0.999]
 model: "UNet"
 uncertainty_type: "quantiles"
@@ -13,7 +13,7 @@ q_lo: 0.05
 q_hi: 0.95
 q_lo_weight: 1
 q_hi_weight: 1
-minimum_lambda: 8 
+minimum_lambda: 0 
 maximum_lambda: 10 
 minimum_lambda_softmax: 0.99 
 maximum_lambda_softmax: 0.998 

@@ -45,14 +45,21 @@ def get_images(model,
 
     examples_output = [model.nested_sets((val_dataset[img_idx][0].unsqueeze(0).to(device),),lam=lam) for img_idx in idx_iterator]
     examples_gt = [val_dataset[img_idx][1] for img_idx in idx_iterator]
-    raw_images_dict = {'inputs': [val_dataset[img_idx][0] for img_idx in idx_iterator], 
+    if val_dataset[0][0].shape[0] > 1:
+      inputs = [val_dataset[img_idx][0][0] for img_idx in idx_iterator]
+    else:
+      inputs = [val_dataset[img_idx][0] for img_idx in idx_iterator]
+    raw_images_dict = {'inputs': inputs, 
                        'gt': examples_gt,
                        'predictions': [example[1] for example in examples_output], 
                        'lower_edge': [example[0] for example in examples_output], 
                        'upper_edge': [example[2] for example in examples_output] 
                       }
 
-    examples_input = [wandb.Image(transform_output(val_dataset[img_idx][0])) for img_idx in idx_iterator]
+    if val_dataset[0][0].shape[0] > 1:
+      examples_input = [wandb.Image(transform_output(val_dataset[img_idx][0][0])) for img_idx in idx_iterator]
+    else:
+      examples_input = [wandb.Image(transform_output(val_dataset[img_idx][0])) for img_idx in idx_iterator]
     examples_lower_edge = [wandb.Image(transform_output(example[0])) for example in examples_output]
     examples_prediction = [wandb.Image(transform_output(example[1])) for example in examples_output]
     examples_upper_edge = [wandb.Image(transform_output(example[2])) for example in examples_output]

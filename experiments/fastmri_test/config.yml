@@ -13,6 +13,8 @@ parameters:
     value: "experiments/fastmri_test/outputs/raw"
   dataset:
     value: "fastmri"
+  num_inputs:
+    value: 1
   data_split_percentages:
     value: [0.8, 0.1, 0.1, 0.0]
   model:

@@ -4,51 +4,51 @@ method: grid
 metric:
   goal: minimize
   name: mean_size 
-name: 'temca_test'
-project: 'temca_test'
+name: 'bsbcm_test'
+project: 'bsbcm_test'
 parameters:
   group:
-    value: "temca_test"
+    value: "bsbcm_test"
   output_dir:
-    value: "experiments/temca_test/outputs/raw"
+    value: "experiments/bsbcm_test/outputs/raw"
   dataset:
-    value: "temca"
+    value: "bsbcm"
   num_inputs:
-    value: 1
+    value: 2
   data_split_percentages:
-    value: [0.008, 0.0001, 0.0001, 0.9918]
+    value: [0.8, 0.1, 0.1, 0.0]
   model:
     value: "UNet"
   uncertainty_type: 
-    values: ["quantiles",]
+    values: ['softmax',]
   alpha: 
     value: 0.1
   delta: 
     value: 0.1
   num_lambdas: 
-    value: 100
+    value: 1000
   rcps_loss: 
     value: "fraction_missed"
   minimum_lambda_softmax:
-    value: 0.99 
+    value: 0 
   maximum_lambda_softmax: 
-    value: 1 
-  minimum_lambda:
-    value: 7 
-  maximum_lambda:
     value: 10 
+  minimum_lambda:
+    value: 0 
+  maximum_lambda:
+    value: 6 
   device:
     value: "cuda"
   epochs:
-    value: 10 
+    value: 120
   batch_size:
-    value: 16 
+    value: 64 
   lr:
-    values: [0.0001,0.001]
+    values: [0.0001, 0.001]
   load_from_checkpoint: 
     value: True
   checkpoint_dir:
-    value: "experiments/temca_test/checkpoints"
+    value: "experiments/bsbcm_test/checkpoints"
   checkpoint_every:
     value: 1 
   validate_every:
@@ -70,10 +70,4 @@ parameters:
   input_normalization:
     value: "standard"
   output_normalization:
-    value: "standard"
-  side_length:
-    value: 320 
-  downsampling_factor:
-    value: 4
-  num_buffer:
-    value: 3 
+    value: "min-max"

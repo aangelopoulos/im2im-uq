@@ -42,7 +42,7 @@ def plot_spearman(methodnames,results_list):
   plt.gca().tick_params(axis=u'both', which=u'both',length=0)
   plt.xlabel("Spearman rank correlation between heuristic and true residual")
   plt.tight_layout()
-  plt.savefig('outputs/temca-spearman.pdf',bbox_inches="tight")
+  plt.savefig('outputs/bsbcm-spearman.pdf',bbox_inches="tight")
 
 def plot_size_violins(methodnames,results_list):
   plt.figure(figsize=(5,5))
@@ -58,9 +58,8 @@ def plot_size_violins(methodnames,results_list):
   plt.yticks([0,1,2])
   plt.xlabel('')
   plt.gca().set_yticklabels(['0%','50%','100%'])
-  plt.gca().set_xticklabels([])
   plt.tight_layout()
-  plt.savefig('outputs/temca-sizes.pdf',bbox_inches="tight")
+  plt.savefig('outputs/bsbcm-sizes.pdf',bbox_inches="tight")
 
 def plot_ssr(methodnames,results_list,alpha):
   plt.figure(figsize=(4,4))
@@ -69,16 +68,15 @@ def plot_ssr(methodnames,results_list,alpha):
   sns.set_palette(sns.light_palette("salmon"))
   df = pd.DataFrame({'Interval Length': len(results_list)*['Short', 'Short-Medium', 'Medium-Long', 'Long'], 'Size-Stratified Risk' : torch.cat([results['size-stratified risk'] for results in results_list]).tolist(), 'Method': [method.replace(' ','\n') for method in methodnames for i in range(results_list[0]['size-stratified risk'].shape[0])]})
   g = sns.catplot(data=df, kind='bar', x='Method', y='Size-Stratified Risk', hue='Interval Length',legend=False)
-  plt.gca().axhline(y=alpha, color='#888888', linewidth=2, linestyle='dashed')
-  plt.text(0.4,alpha+0.005,r'$\alpha$',color='#888888')
   sns.despine(top=True, right=True)
   plt.legend(loc='upper right')
   plt.xlabel('')
   plt.ylim([None,0.2])
-  plt.locator_params(axis="y", nbins=3)
-  plt.gca().set_xticklabels([])
+  plt.locator_params(axis="y", nbins=5)
+  #plt.gca().axhline(y=alpha, color='#888888', linewidth=2, linestyle='dashed')
+  #plt.text(2,alpha+0.005,r'$\alpha$',color='#888888')
   plt.tight_layout()
-  plt.savefig('outputs/temca-size-stratified-risk.pdf',bbox_inches="tight")
+  plt.savefig('outputs/bsbcm-size-stratified-risk.pdf',bbox_inches="tight")
 
 def plot_risks(methodnames,loss_table_list,n,alpha,delta,num_trials=100): 
   fname = 'outputs/raw/risks.pth'
@@ -101,14 +99,12 @@ def plot_risks(methodnames,loss_table_list,n,alpha,delta,num_trials=100):
   df = pd.DataFrame({'Method' : [method.replace(' ','\n') for method in methodnames for i in range(num_trials)], 'Risk' : torch.cat(risks_list,dim=0).tolist()})
   g = sns.violinplot(data=df, x='Method', y='Risk')
   plt.gca().axhline(y=alpha, color='#888888', linewidth=2, linestyle='dashed')
-  plt.text(0.4,alpha+0.0008,r'$\alpha$',color='#888888')
-  plt.gca().set_xticklabels([])
   sns.despine(top=True, right=True)
-  plt.ylim([0.07,None])
   plt.xlabel('')
   plt.locator_params(axis="y", nbins=5)
+  plt.text(2.2,alpha-0.003,r'$\alpha$',color='#888888')
   plt.tight_layout()
-  plt.savefig('outputs/temca-risks.pdf',bbox_inches="tight")
+  plt.savefig('outputs/bsbcm-risks.pdf',bbox_inches="tight")
 
 def plot_images_uq(results):
   uq_cmap = cm.get_cmap('coolwarm',50)
@@ -119,7 +115,7 @@ def plot_images_uq(results):
     input_image = normalize_01(results['inputs'][i].squeeze())
     prediction = normalize_01(results['predictions'][i].squeeze())
     set_sizes = (results['upper_edge'][i] - results['lower_edge'][i]).squeeze()
-    mixed_output = 0.5*torch.tensor(uq_cmap(normalize_01(set_sizes.squeeze())*2)) + 0.5*prediction.unsqueeze(2)
+    mixed_output = 0.3*torch.tensor(uq_cmap(normalize_01(set_sizes.squeeze()))) + 0.7*prediction.unsqueeze(2)
     im = Image.fromarray((255*input_image.numpy()).astype('uint8')).convert('RGB')
     im.save(foldername + "input.png")
     im = Image.fromarray((255*prediction.numpy()).astype('uint8')).convert('RGB')
@@ -132,9 +128,11 @@ def plot_images_uq(results):
     im.save(foldername + "mixed_output.png")
 
 def generate_plots():
-  methodnames = ['Quantile Regression']
-  results_filenames = ['outputs/raw/results_temca_quantiles_16_0.001_standard_standard.pkl',]
-  loss_tables_filenames = ['outputs/raw/loss_table_temca_quantiles_16_0.001_standard_standard.pth',]
+  methodnames = ['Gaussian', 'Residual Magnitude', 'Quantile Regression']
+  results_filenames = ['outputs/raw/results_bsbcm_gaussian_64_0.0001_standard_standard.pkl','outputs/raw/results_bsbcm_residual_magnitude_64_0.0001_standard_standard.pkl','outputs/raw/results_bsbcm_quantiles_64_0.0001_standard_standard.pkl']
+  loss_tables_filenames = ['outputs/raw/loss_table_bsbcm_gaussian_64_0.0001_standard_standard.pth','outputs/raw/loss_table_bsbcm_residual_magnitude_64_0.0001_standard_standard.pth','outputs/raw/loss_table_bsbcm_quantiles_64_0.0001_standard_standard.pth']
+  #results_filenames = ['outputs/raw/results_bsbcm_softmax_64_0.0001_standard_standard.pkl','outputs/raw/results_bsbcm_gaussian_64_0.0001_standard_standard.pkl','outputs/raw/results_bsbcm_residual_magnitude_64_0.0001_standard_standard.pkl','outputs/raw/results_bsbcm_quantiles_64_0.0001_standard_standard.pkl']
+  #loss_tables_filenames = ['outputs/raw/loss_table_bsbcm_softmax_64_0.0001_standard_standard.pth','outputs/raw/loss_table_bsbcm_gaussian_64_0.0001_standard_standard.pth','outputs/raw/loss_table_bsbcm_residual_magnitude_64_0.0001_standard_standard.pth','outputs/raw/loss_table_bsbcm_quantiles_64_0.0001_standard_standard.pth']
   # Load results
   results_list = []
   for filename in results_filenames:
@@ -154,7 +152,7 @@ def generate_plots():
   plot_ssr(methodnames,results_list,alpha)
   # Plot size distribution
   plot_size_violins(methodnames,results_list)
-  # Plot the TEM images (only quantile regression)
+  # Plot the MRI images (only quantile regression)
   plot_images_uq(results_list[-1])
 
 if __name__ == "__main__":

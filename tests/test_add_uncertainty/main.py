@@ -5,6 +5,7 @@ import torch
 import torch.nn as nn
 from core.datasets.CAREDrosophila import CAREDrosophilaDataset
 from core.datasets.fastmri import FastMRIDataset
+from core.datasets.bsbcm import BSBCMDataset
 from core.datasets.temca import TEMCADataset
 from core.models.trunks.unet import UNet
 from core.models.trunks.wnet import WNet
@@ -23,27 +24,35 @@ import wandb
 
 if __name__ == "__main__":
     fix_randomness()
-    wandb.init()
+    #wandb.init()
     dir_path = os.path.dirname(os.path.realpath(__file__))
     with open(dir_path + '/config.yml') as file:
       config = yaml.safe_load(file)
-    if config["dataset"] == "CAREDrosophila":
+    if config["dataset"] == "bsbcm":
+      path = '/clusterfs/abc/angelopoulos/bsbcm/'
+      dataset = BSBCMDataset(path, num_instances='all', normalize=config["output_normalization"])
+      num_inputs = 2
+    elif config["dataset"] == "CAREDrosophila":
       path = '/clusterfs/abc/angelopoulos/care/Isotropic_Drosophila/train_data/data_label.npz'
       dataset = CAREDrosophilaDataset(path, num_instances='all', normalize='min-max')
       #dataset = normalize_dataset(dataset)
+      num_inputs = 1 
     elif config["dataset"] == "fastmri":
       path = '/clusterfs/abc/amit/fastmri/knee/singlecoil_train/'
       mask_info = {'type': 'equispaced', 'center_fraction' : [0.08], 'acceleration' : [4]}
       dataset = FastMRIDataset(path, normalize_input=config["input_normalization"], normalize_output = config["output_normalization"], mask_info=mask_info, num_volumes=300)
       dataset = normalize_dataset(dataset)
       config.update(dataset.norm_params)
+      num_inputs = 1 
     elif config["dataset"] == "temca":
       path = '/clusterfs/fiona/amit/temca_data/'
       dataset = TEMCADataset(path, patch_size=[320,320], downsampling=[4,4], num_imgs='all', buffer_size=5, normalize='01') 
+      num_inputs = 1 
     else:
       raise NotImplementedError
 
-    trunk = UNet(1,1)
+    trunk = UNet(num_inputs,1)
+    pdb.set_trace()
     model = add_uncertainty(trunk, config)
     if config["dataset"] == "temca":
       img_paths = dataset.img_paths

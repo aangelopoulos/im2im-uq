@@ -24,6 +24,7 @@ from core.models.trunks.unet import UNet
 
 # Datasets
 from core.datasets.CAREDrosophila import CAREDrosophilaDataset
+from core.datasets.bsbcm import BSBCMDataset
 from core.datasets.fastmri import FastMRIDataset
 from core.datasets.temca import TEMCADataset
 
@@ -60,6 +61,9 @@ if __name__ == "__main__":
                                      std=[0.229, 0.224, 0.225])
     transform = T.Compose([ T.Resize(256), T.CenterCrop(224), T.ToTensor(), normalize ])
     dataset = torchvision.datasets.CIFAR10('/clusterfs/abc/angelopoulos/CIFAR10', download=True, transform=transform)
+  elif wandb.config["dataset"] == "bsbcm":
+    path = '/clusterfs/abc/angelopoulos/bsbcm/'
+    dataset = BSBCMDataset(path, num_instances='all', normalize=wandb.config["output_normalization"])
   elif wandb.config["dataset"] == "CAREDrosophila":
     path = '/clusterfs/abc/angelopoulos/care/Isotropic_Drosophila/train_data/data_label.npz'
     dataset = CAREDrosophilaDataset(path, num_instances='all', normalize=wandb.config["output_normalization"])
@@ -81,7 +85,7 @@ if __name__ == "__main__":
     if wandb.config["model"] == "ResNet18":
       trunk = torchvision.models.resnet18(num_classes=wandb.config["num_classes"])
   if wandb.config["model"] == "UNet":
-      trunk = UNet(1,1)
+      trunk = UNet(wandb.config["num_inputs"],1)
 
   # ADD LAST LAYER OF MODEL
   model = add_uncertainty(trunk, params)
