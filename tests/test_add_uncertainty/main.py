@@ -24,12 +24,12 @@ import wandb
 
 if __name__ == "__main__":
     fix_randomness()
-    #wandb.init()
+    wandb.init()
     dir_path = os.path.dirname(os.path.realpath(__file__))
     with open(dir_path + '/config.yml') as file:
       config = yaml.safe_load(file)
     if config["dataset"] == "bsbcm":
-      path = '/clusterfs/abc/angelopoulos/bsbcm/'
+      path = '/home/aa/data/bsbcm'
       dataset = BSBCMDataset(path, num_instances='all', normalize=config["output_normalization"])
       num_inputs = 2
     elif config["dataset"] == "CAREDrosophila":
@@ -52,7 +52,6 @@ if __name__ == "__main__":
       raise NotImplementedError
 
     trunk = UNet(num_inputs,1)
-    pdb.set_trace()
     model = add_uncertainty(trunk, config)
     if config["dataset"] == "temca":
       img_paths = dataset.img_paths
@@ -74,7 +73,7 @@ if __name__ == "__main__":
                       train_dataset,
                       val_dataset,
                       config['device'],
-                      1,
+                      config['epochs'],
                       config['batch_size'],
                       config['lr'],
                       config['load_from_checkpoint'],
@@ -86,10 +85,10 @@ if __name__ == "__main__":
     #val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False, num_workers=0)
     #val_loss = eval_net(model,val_loader,config['device'])
     #print(f"Done validating! Validation Loss: {val_loss}")
-    model = calibrate_model(model, calib_dataset, config)
+    model, _ = calibrate_model(model, calib_dataset, config)
     print(f"Model calibrated! lambda hat = {model.lhat}")
     # Get the prediction sets and properly organize them 
-    examples_input, examples_lower_edge, examples_prediction, examples_upper_edge, examples_ground_truth, examples_lower_length, examples_upper_length = get_images(model,
+    examples_input, examples_lower_edge, examples_prediction, examples_upper_edge, examples_ground_truth, examples_lower_length, examples_upper_length, _ = get_images(model,
                                                                                                                                                                         val_dataset,
                                                                                                                                                                        config['device'],
                                                                                                                                                                        list(range(5)),
@@ -103,6 +102,6 @@ if __name__ == "__main__":
     wandb.log({"epoch": config['epochs']+1, "Lower length": examples_lower_length})
     wandb.log({"epoch": config['epochs']+1, "Upper length": examples_upper_length})
     # Evaluate the risk and size
-    risk, sizes, spearman, stratified_risk = eval_set_metrics(model, val_dataset, config)
-    print(f"Risk: {risk}  |  Mean size: {sizes.mean()}  |  Spearman: {spearman}  |  stratified risk: {stratified_risk}  ")
-    wandb.log({"risk": risk, "mean_size":sizes.mean(), "Spearman":spearman, "Size-Stratified Risk":stratified_risk})
+    risk, sizes, spearman, stratified_risk, mse = eval_set_metrics(model, val_dataset, config)
+    print(f"Risk: {risk}  |  Mean size: {sizes.mean()}  |  Spearman: {spearman}  |  stratified risk: {stratified_risk}  | MSE: {mse}")
+    wandb.log({"risk": risk, "mean_size":sizes.mean(), "Spearman":spearman, "Size-Stratified Risk":stratified_risk, "MSE": mse})

@@ -28,7 +28,7 @@ def gaussian_regression_nested_sets_from_output(model, output, lam=None):
       if model.lhat == None:
           raise Exception("You have to specify lambda unless your model is already calibrated.")
       lam = model.lhat 
-  upper_edge = lam * output[:,1,:,:,:] + output[:,0,:,:,:]
-  lower_edge = -lam * output[:,1,:,:,:] + output[:,0,:,:,:]
+  upper_edge = lam * output[:,1,:,:,:].sqrt() + output[:,0,:,:,:]
+  lower_edge = -lam * output[:,1,:,:,:].sqrt() + output[:,0,:,:,:]
 
   return lower_edge, output[:,0,:,:,:], upper_edge 

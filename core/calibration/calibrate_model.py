@@ -48,11 +48,12 @@ def get_rcps_metrics_from_outputs(model, out_dataset, rcps_loss_fn, device):
   sizes = torch.cat(sizes,dim=0)
   residuals = torch.cat(residuals,dim=0).detach().cpu().numpy() 
   spearman = spearmanr(residuals, sizes)[0]
+  mse = (residuals*residuals).mean().item()
   size_bins = torch.tensor([0, torch.quantile(sizes, 0.25), torch.quantile(sizes, 0.5), torch.quantile(sizes, 0.75)])
   buckets = torch.bucketize(sizes, size_bins)-1
   stratified_risks = torch.tensor([losses[buckets == bucket].mean() for bucket in range(size_bins.shape[0])])
-  print(f"Model output shape: {x.shape}, label shape: {labels.shape}, Sets shape: {sets[2].shape}, sizes: {sizes}, size_bins:{size_bins}, stratified_risks: {stratified_risks}")
-  return losses, sizes, spearman, stratified_risks 
+  print(f"Model output shape: {x.shape}, label shape: {labels.shape}, Sets shape: {sets[2].shape}, sizes: {sizes}, size_bins:{size_bins}, stratified_risks: {stratified_risks}, mse: {mse}")
+  return losses, sizes, spearman, stratified_risks, mse
 
 def evaluate_from_loss_table(loss_table,n,alpha,delta):
   with torch.no_grad():
@@ -126,7 +127,7 @@ def calibrate_model(model, dataset, config):
     calib_loss_table = torch.zeros((outputs.shape[0],lambdas.shape[0]))
     for lam in reversed(lambdas):
       losses = get_rcps_losses_from_outputs(model, out_dataset, rcps_loss_fn, lam-dlambda, device)
-      calib_loss_table[:,np.where(lambdas==lam)[0]]
+      calib_loss_table[:,np.where(lambdas==lam)[0]] = losses[:,None]
       Rhat = losses.mean()
       RhatPlus = HB_mu_plus(Rhat.item(), losses.shape[0], delta)
       print(f"\rLambda: {lam:.4f}  |  Rhat: {Rhat:.4f}  |  RhatPlus: {RhatPlus:.4f}  ",end='')

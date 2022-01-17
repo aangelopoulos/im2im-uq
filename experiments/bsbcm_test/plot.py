@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import torch
 from matplotlib import cm
+import matplotlib.ticker as ticker
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pickle as pkl
@@ -24,6 +25,40 @@ class CPU_Unpickler(pkl.Unpickler):
       return lambda b: torch.load(io.BytesIO(b), map_location='cpu')
     else:
       return super().find_class(module, name)
+
+def plot_mse(methodnames,results_list):
+  def my_formatter(x, pos):
+    """Format 1 as 1, 0 as 0, and all values whose absolute values is between
+0 and 1 without the leading "0." (e.g., 0.7 is formatted as .7 and -0.4 is
+formatted as -.4)."""
+    val_str = '{:g}'.format(x)
+    val_str = val_str if len(val_str) <= 5 else val_str[:5]
+    if np.abs(x) > 0 and np.abs(x) < 1:
+      return val_str.replace("0", "", 1)
+    else:
+      return val_str
+  major_formatter = ticker.FuncFormatter(my_formatter)
+
+  plt.figure(figsize=(12,1.75))
+  sns.set_palette('pastel')
+  # Crop sizes to 99%
+  mses = np.array([results['mse'] for results in results_list])
+  #df = pd.DataFrame({'Spearman Rank Correlation' : [results['spearman'] for results in results_list], 'Method': [method.replace(' ','\n') for method in methodnames]})
+  #g = sns.scatterplot(data=df, x='Method', y='Spearman Rank Correlation', kind='bar')
+  for j in range(len(methodnames)):
+    plt.scatter(x=[mses[j],], y=[np.random.uniform(size=(1,))/4,], s=70, label=methodnames[j])
+  sns.despine(top=True, bottom=True, right=True, left=True)
+  plt.gca().set_yticks([])
+  plt.gca().set_yticklabels([])
+  plt.ylim([-0.1,1])
+  plt.xlim([0,None])
+  plt.legend(bbox_to_anchor=(-0.5, 0.5))
+  plt.gca().tick_params(axis=u'both', which=u'both',length=0)
+  plt.gca().xaxis.set_major_formatter(ticker.FormatStrFormatter('%.3f'))
+  plt.locator_params(axis="x", nbins=4)
+  plt.xlabel("Mean-squared error of prediction")
+  plt.tight_layout()
+  plt.savefig('outputs/bsbcm-mse.pdf',bbox_inches="tight")
 
 def plot_spearman(methodnames,results_list):
   plt.figure(figsize=(12,1.75))
@@ -46,7 +81,7 @@ def plot_spearman(methodnames,results_list):
 
 def plot_size_violins(methodnames,results_list):
   plt.figure(figsize=(5,5))
-  sns.set(font_scale=1.35)
+  sns.set(font_scale=1.2)
   sns.set_style("white")
   sns.set_palette('pastel')
   # Crop sizes to 99%
@@ -63,7 +98,7 @@ def plot_size_violins(methodnames,results_list):
 
 def plot_ssr(methodnames,results_list,alpha):
   plt.figure(figsize=(4,4))
-  sns.set(font_scale=1.35)
+  sns.set(font_scale=1.2)
   sns.set_style("white")
   sns.set_palette(sns.light_palette("salmon"))
   df = pd.DataFrame({'Interval Length': len(results_list)*['Short', 'Short-Medium', 'Medium-Long', 'Long'], 'Size-Stratified Risk' : torch.cat([results['size-stratified risk'] for results in results_list]).tolist(), 'Method': [method.replace(' ','\n') for method in methodnames for i in range(results_list[0]['size-stratified risk'].shape[0])]})
@@ -93,7 +128,7 @@ def plot_risks(methodnames,loss_table_list,n,alpha,delta,num_trials=100):
     with open(fname, 'wb') as f:
       pkl.dump(risks_list,f)
   plt.figure(figsize=(5,5))
-  sns.set(font_scale=1.35)
+  sns.set(font_scale=1.2)
   sns.set_style("white")
   sns.set_palette('pastel')
   df = pd.DataFrame({'Method' : [method.replace(' ','\n') for method in methodnames for i in range(num_trials)], 'Risk' : torch.cat(risks_list,dim=0).tolist()})
@@ -102,7 +137,7 @@ def plot_risks(methodnames,loss_table_list,n,alpha,delta,num_trials=100):
   sns.despine(top=True, right=True)
   plt.xlabel('')
   plt.locator_params(axis="y", nbins=5)
-  plt.text(2.2,alpha-0.003,r'$\alpha$',color='#888888')
+  plt.text(3.2,alpha-0.003,r'$\alpha$',color='#888888')
   plt.tight_layout()
   plt.savefig('outputs/bsbcm-risks.pdf',bbox_inches="tight")
 
@@ -128,11 +163,9 @@ def plot_images_uq(results):
     im.save(foldername + "mixed_output.png")
 
 def generate_plots():
-  methodnames = ['Gaussian', 'Residual Magnitude', 'Quantile Regression']
-  results_filenames = ['outputs/raw/results_bsbcm_gaussian_64_0.0001_standard_standard.pkl','outputs/raw/results_bsbcm_residual_magnitude_64_0.0001_standard_standard.pkl','outputs/raw/results_bsbcm_quantiles_64_0.0001_standard_standard.pkl']
-  loss_tables_filenames = ['outputs/raw/loss_table_bsbcm_gaussian_64_0.0001_standard_standard.pth','outputs/raw/loss_table_bsbcm_residual_magnitude_64_0.0001_standard_standard.pth','outputs/raw/loss_table_bsbcm_quantiles_64_0.0001_standard_standard.pth']
-  #results_filenames = ['outputs/raw/results_bsbcm_softmax_64_0.0001_standard_standard.pkl','outputs/raw/results_bsbcm_gaussian_64_0.0001_standard_standard.pkl','outputs/raw/results_bsbcm_residual_magnitude_64_0.0001_standard_standard.pkl','outputs/raw/results_bsbcm_quantiles_64_0.0001_standard_standard.pkl']
-  #loss_tables_filenames = ['outputs/raw/loss_table_bsbcm_softmax_64_0.0001_standard_standard.pth','outputs/raw/loss_table_bsbcm_gaussian_64_0.0001_standard_standard.pth','outputs/raw/loss_table_bsbcm_residual_magnitude_64_0.0001_standard_standard.pth','outputs/raw/loss_table_bsbcm_quantiles_64_0.0001_standard_standard.pth']
+  methodnames = ['Residual Magnitude', 'Gaussian', 'Softmax', 'Quantile Regression']
+  results_filenames = ['outputs/raw/results_bsbcm_softmax_64_0.0001_standard_min-max.pkl','outputs/raw/results_bsbcm_gaussian_64_0.0001_standard_min-max.pkl','outputs/raw/results_bsbcm_residual_magnitude_64_0.0001_standard_min-max.pkl','outputs/raw/results_bsbcm_quantiles_64_0.0001_standard_min-max.pkl']
+  loss_tables_filenames = ['outputs/raw/loss_table_bsbcm_softmax_64_0.0001_standard_min-max.pth','outputs/raw/loss_table_bsbcm_gaussian_64_0.0001_standard_min-max.pth','outputs/raw/loss_table_bsbcm_residual_magnitude_64_0.0001_standard_min-max.pth','outputs/raw/loss_table_bsbcm_quantiles_64_0.0001_standard_min-max.pth']
   # Load results
   results_list = []
   for filename in results_filenames:
@@ -146,6 +179,8 @@ def generate_plots():
   delta = 0.1
   n = loss_tables_list[0].shape[0]//2
   plot_risks(methodnames,loss_tables_list,n,alpha,delta)
+  # Plot MSEs 
+  plot_mse(methodnames,results_list)
   # Plot spearman correlations
   plot_spearman(methodnames,results_list)
   # Plot size-stratified risks 

@@ -20,7 +20,7 @@ parameters:
   model:
     value: "UNet"
   uncertainty_type: 
-    values: ['softmax',]
+    values: ['gaussian','softmax','residual_magnitude','quantiles']
   alpha: 
     value: 0.1
   delta: 
@@ -32,7 +32,7 @@ parameters:
   minimum_lambda_softmax:
     value: 0 
   maximum_lambda_softmax: 
-    value: 10 
+    value: 1 
   minimum_lambda:
     value: 0 
   maximum_lambda:
@@ -54,7 +54,7 @@ parameters:
   validate_every:
     value: 1 
   num_validation_images:
-    value: 10
+    value: 200 
   q_lo:
     value: 0.05
   q_hi:

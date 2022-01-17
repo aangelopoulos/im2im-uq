@@ -62,7 +62,7 @@ if __name__ == "__main__":
     transform = T.Compose([ T.Resize(256), T.CenterCrop(224), T.ToTensor(), normalize ])
     dataset = torchvision.datasets.CIFAR10('/clusterfs/abc/angelopoulos/CIFAR10', download=True, transform=transform)
   elif wandb.config["dataset"] == "bsbcm":
-    path = '/clusterfs/abc/angelopoulos/bsbcm/'
+    path = '/home/aa/data/bsbcm'
     dataset = BSBCMDataset(path, num_instances='all', normalize=wandb.config["output_normalization"])
   elif wandb.config["dataset"] == "CAREDrosophila":
     path = '/clusterfs/abc/angelopoulos/care/Isotropic_Drosophila/train_data/data_label.npz'
@@ -157,7 +157,7 @@ if __name__ == "__main__":
     wandb.log({"epoch": wandb.config['epochs']+1, "Upper length": examples_ul})
     # Get the risk and set size
     print("GET THE RISK AND SET SIZE")
-    risk, sizes, spearman, stratified_risk = eval_set_metrics(model, val_dataset, params)
+    risk, sizes, spearman, stratified_risk, mse = eval_set_metrics(model, val_dataset, params)
     print("DONE")
 
 
@@ -165,8 +165,8 @@ if __name__ == "__main__":
     #table = wandb.Table(data=data, columns = ["Difficulty", "Empirical Risk"])
     #wandb.log({"Size-Stratified Risk Barplot" : wandb.plot.bar(table, "Difficulty","Empirical Risk", title="Size-Stratified Risk") })
 
-    print(f"Risk: {risk}  |  Mean size: {sizes.mean()}  |  Spearman: {spearman}  |  Size-stratified risk: {stratified_risk}  ")
-    wandb.log({"epoch": wandb.config['epochs']+1, "risk": risk, "mean_size":sizes.mean(), "Spearman":spearman, "Size-Stratified Risk":stratified_risk})
+    print(f"Risk: {risk}  |  Mean size: {sizes.mean()}  |  Spearman: {spearman}  |  Size-stratified risk: {stratified_risk} | MSE: {mse}")
+    wandb.log({"epoch": wandb.config['epochs']+1, "risk": risk, "mean_size":sizes.mean(), "Spearman":spearman, "Size-Stratified Risk":stratified_risk, "mse":mse})
     
     # Save outputs for later plotting
     print("Saving outputs for plotting")
@@ -176,7 +176,7 @@ if __name__ == "__main__":
             print('Created output directory')
         except OSError:
             pass
-        results = { "risk": risk, "sizes": sizes, "spearman": spearman, "size-stratified risk": stratified_risk }
+        results = { "risk": risk, "sizes": sizes, "spearman": spearman, "size-stratified risk": stratified_risk, "mse": mse }
         results.update(raw_images_dict)
         with open(results_fname, 'wb') as handle:
           pkl.dump(results, handle, protocol=pkl.HIGHEST_PROTOCOL)

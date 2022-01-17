@@ -38,7 +38,7 @@ def run_validation(net,
     # Plot images 
     try:
       # Get the prediction sets and properly organize them 
-      examples_input, examples_lower_edge, examples_prediction, examples_upper_edge, examples_ground_truth, examples_ll, examples_ul= get_images(net,
+      examples_input, examples_lower_edge, examples_prediction, examples_upper_edge, examples_ground_truth, examples_ll, examples_ul, results_list = get_images(net,
                                                                                                                                       val_dataset,
                                                                                                                                       device,
                                                                                                                                       list(range(config['num_validation_images'])),
@@ -56,6 +56,7 @@ def run_validation(net,
       print("Failed logging images.")
     val_loss = eval_net(net, val_loader, device)
     wandb.log({"epoch": epoch, "iter":global_step, "val_loss":val_loss})
+    print(f"Val loss: {val_loss}")
   net.train()
 
 def train_net(net,
@@ -180,8 +181,9 @@ def train_net(net,
                   except OSError:
                       pass
                   checkpoint_fname = checkpoint_dir + f'/CP_epoch{epoch + 1}_' + config['dataset'] + "_" + config['uncertainty_type'] + "_" + str(config['batch_size']) + "_" + str(config['lr']) + "_" + config['input_normalization'] + "_" + config['output_normalization'].replace('.','_') + '.pth'
-                  torch.save(net.module, checkpoint_fname)
+                  torch.save(net, checkpoint_fname)
+                  #torch.save(net.module, checkpoint_fname)
 
                   logging.info(f'Checkpoint {epoch + 1} saved !')
         net.eval()
-    return net.module
+    return net#.module
