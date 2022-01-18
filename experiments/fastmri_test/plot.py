@@ -165,8 +165,8 @@ def plot_images_uq(results):
 
 def generate_plots():
   methodnames = ['Gaussian','Residual Magnitude','Quantile Regression']
-  results_filenames = ['outputs/raw/results_fastmri_gaussian_78_0.0001_standard_standard.pkl','outputs/raw/results_fastmri_residual_magnitude_78_0.0001_standard_standard.pkl','outputs/raw/results_fastmri_quantiles_78_0.0001_standard_standard.pkl']
-  loss_tables_filenames = ['outputs/raw/loss_table_fastmri_gaussian_78_0.0001_standard_standard.pth','outputs/raw/loss_table_fastmri_residual_magnitude_78_0.0001_standard_standard.pth','outputs/raw/loss_table_fastmri_quantiles_78_0.0001_standard_standard.pth']
+  results_filenames = ['outputs/raw/results_fastmri_gaussian_78_0.001_standard_standard.pkl','outputs/raw/results_fastmri_residual_magnitude_78_0.0001_standard_standard.pkl','outputs/raw/results_fastmri_quantiles_78_0.0001_standard_standard.pkl']
+  loss_tables_filenames = ['outputs/raw/loss_table_fastmri_gaussian_78_0.001_standard_standard.pth','outputs/raw/loss_table_fastmri_residual_magnitude_78_0.0001_standard_standard.pth','outputs/raw/loss_table_fastmri_quantiles_78_0.0001_standard_standard.pth']
   # Load results
   results_list = []
   for filename in results_filenames:
