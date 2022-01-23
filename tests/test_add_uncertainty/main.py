@@ -38,9 +38,9 @@ if __name__ == "__main__":
       #dataset = normalize_dataset(dataset)
       num_inputs = 1 
     elif config["dataset"] == "fastmri":
-      path = '/clusterfs/abc/amit/fastmri/knee/singlecoil_train/'
+      path = '/home/aa/data/singlecoil_train/'
       mask_info = {'type': 'equispaced', 'center_fraction' : [0.08], 'acceleration' : [4]}
-      dataset = FastMRIDataset(path, normalize_input=config["input_normalization"], normalize_output = config["output_normalization"], mask_info=mask_info, num_volumes=300)
+      dataset = FastMRIDataset(path, normalize_input=config["input_normalization"], normalize_output = config["output_normalization"], mask_info=mask_info)
       dataset = normalize_dataset(dataset)
       config.update(dataset.norm_params)
       num_inputs = 1 
@@ -82,6 +82,7 @@ if __name__ == "__main__":
                       config['validate_every'],
                       config)   
     model.eval()
+    pdb.set_trace()
     #val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False, num_workers=0)
     #val_loss = eval_net(model,val_loader,config['device'])
     #print(f"Done validating! Validation Loss: {val_loss}")

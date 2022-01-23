@@ -37,9 +37,12 @@ def softmax_nested_sets_from_output(model, output, lam=None):
     # The Romano et al. version of classification
     vals, idxs = output.sort(dim=1,descending=True)
     torch.cumsum(vals,dim=1,out=vals)
-    idxs[vals > lam] = -num_softmax
-    lower_edge = idxs.abs().min(dim=1)[0]/num_softmax
+
+    lower_quantile = (vals <= 0.05).float().sum(dim=1)/num_softmax
+    upper_quantile = (vals > 0.95).float().sum(dim=1)/num_softmax
+
     prediction = torch.argmax(output, dim=1)/num_softmax
-    upper_edge = idxs.max(dim=1)[0]/num_softmax
+    lower_edge = prediction - (prediction-lower_quantile).relu()*lam
+    upper_edge = prediction + (upper_quantile-prediction).relu()*lam
 
     return lower_edge, prediction, upper_edge 

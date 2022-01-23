@@ -19,8 +19,10 @@ parameters:
     value: [0.8, 0.1, 0.1, 0.0]
   model:
     value: "UNet"
-  uncertainty_type: 
+  old_uncertainty_type: 
     values: ['gaussian','softmax','residual_magnitude','quantiles']
+  uncertainty_type: 
+    values: ['quantiles','softmax',]
   alpha: 
     value: 0.1
   delta: 
@@ -32,7 +34,7 @@ parameters:
   minimum_lambda_softmax:
     value: 0 
   maximum_lambda_softmax: 
-    value: 1 
+    value: 0.2 
   minimum_lambda:
     value: 0 
   maximum_lambda:
@@ -40,7 +42,7 @@ parameters:
   device:
     value: "cuda"
   epochs:
-    value: 120
+    value: 20 
   batch_size:
     value: 64 
   lr:
@@ -54,7 +56,7 @@ parameters:
   validate_every:
     value: 1 
   num_validation_images:
-    value: 200 
+    value: 2
   q_lo:
     value: 0.05
   q_hi:
