@@ -16,7 +16,7 @@ q_hi_weight: 1
 minimum_lambda: 0 
 maximum_lambda: 10 
 minimum_lambda_softmax: 0 
-maximum_lambda_softmax: 1 
+maximum_lambda_softmax: 60 
 mse_weight: 1
 num_validation_images: 5 
 device: "cuda"

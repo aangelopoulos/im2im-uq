@@ -82,13 +82,13 @@ if __name__ == "__main__":
                       config['validate_every'],
                       config)   
     model.eval()
-    pdb.set_trace()
     #val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False, num_workers=0)
     #val_loss = eval_net(model,val_loader,config['device'])
     #print(f"Done validating! Validation Loss: {val_loss}")
     model, _ = calibrate_model(model, calib_dataset, config)
     print(f"Model calibrated! lambda hat = {model.lhat}")
     # Get the prediction sets and properly organize them 
+    """
     examples_input, examples_lower_edge, examples_prediction, examples_upper_edge, examples_ground_truth, examples_lower_length, examples_upper_length, _ = get_images(model,
                                                                                                                                                                         val_dataset,
                                                                                                                                                                        config['device'],
@@ -102,7 +102,9 @@ if __name__ == "__main__":
     wandb.log({"epoch": config['epochs']+1, "Ground truth": examples_ground_truth})
     wandb.log({"epoch": config['epochs']+1, "Lower length": examples_lower_length})
     wandb.log({"epoch": config['epochs']+1, "Upper length": examples_upper_length})
+                                                                                                                                     """
     # Evaluate the risk and size
+    pdb.set_trace()
     risk, sizes, spearman, stratified_risk, mse = eval_set_metrics(model, val_dataset, config)
     print(f"Risk: {risk}  |  Mean size: {sizes.mean()}  |  Spearman: {spearman}  |  stratified risk: {stratified_risk}  | MSE: {mse}")
     wandb.log({"risk": risk, "mean_size":sizes.mean(), "Spearman":spearman, "Size-Stratified Risk":stratified_risk, "MSE": mse})

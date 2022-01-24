@@ -87,6 +87,8 @@ def plot_size_violins(methodnames,results_list):
   # Crop sizes to 99%
   for results in results_list:
     results['sizes'] = torch.clamp(results['sizes'], min=0, max=2)
+    if results['sizes'].var() < 1e-4:
+     results['sizes'] = results['sizes'] + (torch.rand(results['sizes'].shape)-0.5)*0.05
   df = pd.DataFrame({'Interval Length' : torch.cat([results['sizes'] for results in results_list]).tolist(), 'Method': [method.replace(' ','\n') for method in methodnames for i in range(results_list[0]['sizes'].shape[0])]})
   g = sns.violinplot(data=df, x='Method', y='Interval Length', cut=0)
   sns.despine(top=True, right=True)
@@ -169,7 +171,6 @@ def generate_plots():
   loss_tables_filenames = ['outputs/raw/loss_table_bsbcm_residual_magnitude_64_0.0001_standard_min-max.pth','outputs/raw/loss_table_bsbcm_gaussian_64_0.0001_standard_min-max.pth','outputs/raw/loss_table_bsbcm_softmax_64_0.001_standard_min-max.pth','outputs/raw/loss_table_bsbcm_quantiles_64_0.0001_standard_min-max.pth']
   # Load results
   results_list = []
-  pdb.set_trace()
   for filename in results_filenames:
     with open(filename, 'rb') as handle:
       results_list = results_list + [CPU_Unpickler(handle).load(),]
