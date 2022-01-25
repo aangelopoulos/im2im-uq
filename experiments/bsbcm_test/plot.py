@@ -167,8 +167,8 @@ def plot_images_uq(results):
 
 def generate_plots():
   methodnames = ['Residual Magnitude', 'Gaussian', 'Softmax', 'Quantile Regression']
-  results_filenames = ['outputs/raw/results_bsbcm_residual_magnitude_64_0.0001_standard_min-max.pkl','outputs/raw/results_bsbcm_gaussian_64_0.0001_standard_min-max.pkl','outputs/raw/results_bsbcm_softmax_64_0.001_standard_min-max.pkl','outputs/raw/results_bsbcm_quantiles_64_0.0001_standard_min-max.pkl']
-  loss_tables_filenames = ['outputs/raw/loss_table_bsbcm_residual_magnitude_64_0.0001_standard_min-max.pth','outputs/raw/loss_table_bsbcm_gaussian_64_0.0001_standard_min-max.pth','outputs/raw/loss_table_bsbcm_softmax_64_0.001_standard_min-max.pth','outputs/raw/loss_table_bsbcm_quantiles_64_0.0001_standard_min-max.pth']
+  results_filenames = ['outputs/raw/results_bsbcm_residual_magnitude_64_0.0001_standard_min-max.pkl','outputs/raw/results_bsbcm_gaussian_64_0.0001_standard_min-max.pkl','outputs/raw/results_bsbcm_softmax_64_0.0001_standard_min-max.pkl','outputs/raw/results_bsbcm_quantiles_64_0.0001_standard_min-max.pkl']
+  loss_tables_filenames = ['outputs/raw/loss_table_bsbcm_residual_magnitude_64_0.0001_standard_min-max.pth','outputs/raw/loss_table_bsbcm_gaussian_64_0.0001_standard_min-max.pth','outputs/raw/loss_table_bsbcm_softmax_64_0.0001_standard_min-max.pth','outputs/raw/loss_table_bsbcm_quantiles_64_0.0001_standard_min-max.pth']
   # Load results
   results_list = []
   for filename in results_filenames:
