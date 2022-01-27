@@ -34,8 +34,8 @@ class ModelWithUncertainty(nn.Module):
   # Always outputs [0,1] valued nested sets
   def nested_sets_from_output(self, output, lam=None):
     lower_edge, prediction, upper_edge = self.in_nested_sets_from_output_fn(self, output, lam)
-    upper_edge = torch.maximum(upper_edge, output[:,1,:,:,:] + 1e-6) # set a lower bound on the size.
-    lower_edge = torch.minimum(lower_edge, output[:,1,:,:,:] - 1e-6)
+    upper_edge = torch.maximum(upper_edge, prediction + 1e-6) # set a lower bound on the size.
+    lower_edge = torch.minimum(lower_edge, prediction - 1e-6)
 
     return lower_edge, prediction, upper_edge 
 

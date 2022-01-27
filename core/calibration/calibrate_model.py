@@ -46,6 +46,7 @@ def get_rcps_metrics_from_outputs(model, out_dataset, rcps_loss_fn, device):
     sizes = sizes + [torch.tensor(size_samples),]
   losses = torch.cat(losses,dim=0)
   sizes = torch.cat(sizes,dim=0)
+  sizes = sizes + torch.rand(size=sizes.shape).to(sizes.device)*1e-6
   residuals = torch.cat(residuals,dim=0).detach().cpu().numpy() 
   spearman = spearmanr(residuals, sizes)[0]
   mse = (residuals*residuals).mean().item()

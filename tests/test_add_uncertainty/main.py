@@ -38,9 +38,9 @@ if __name__ == "__main__":
       #dataset = normalize_dataset(dataset)
       num_inputs = 1 
     elif config["dataset"] == "fastmri":
-      path = '/clusterfs/abc/amit/fastmri/knee/singlecoil_train/'
+      path = '/home/aa/data/singlecoil_train/'
       mask_info = {'type': 'equispaced', 'center_fraction' : [0.08], 'acceleration' : [4]}
-      dataset = FastMRIDataset(path, normalize_input=config["input_normalization"], normalize_output = config["output_normalization"], mask_info=mask_info, num_volumes=300)
+      dataset = FastMRIDataset(path, normalize_input=config["input_normalization"], normalize_output = config["output_normalization"], mask_info=mask_info)
       dataset = normalize_dataset(dataset)
       config.update(dataset.norm_params)
       num_inputs = 1 
@@ -88,6 +88,7 @@ if __name__ == "__main__":
     model, _ = calibrate_model(model, calib_dataset, config)
     print(f"Model calibrated! lambda hat = {model.lhat}")
     # Get the prediction sets and properly organize them 
+    """
     examples_input, examples_lower_edge, examples_prediction, examples_upper_edge, examples_ground_truth, examples_lower_length, examples_upper_length, _ = get_images(model,
                                                                                                                                                                         val_dataset,
                                                                                                                                                                        config['device'],
@@ -101,7 +102,9 @@ if __name__ == "__main__":
     wandb.log({"epoch": config['epochs']+1, "Ground truth": examples_ground_truth})
     wandb.log({"epoch": config['epochs']+1, "Lower length": examples_lower_length})
     wandb.log({"epoch": config['epochs']+1, "Upper length": examples_upper_length})
+                                                                                                                                     """
     # Evaluate the risk and size
+    pdb.set_trace()
     risk, sizes, spearman, stratified_risk, mse = eval_set_metrics(model, val_dataset, config)
     print(f"Risk: {risk}  |  Mean size: {sizes.mean()}  |  Spearman: {spearman}  |  stratified risk: {stratified_risk}  | MSE: {mse}")
     wandb.log({"risk": risk, "mean_size":sizes.mean(), "Spearman":spearman, "Size-Stratified Risk":stratified_risk, "MSE": mse})

@@ -46,7 +46,7 @@ formatted as -.4)."""
   #df = pd.DataFrame({'Spearman Rank Correlation' : [results['spearman'] for results in results_list], 'Method': [method.replace(' ','\n') for method in methodnames]})
   #g = sns.scatterplot(data=df, x='Method', y='Spearman Rank Correlation', kind='bar')
   for j in range(len(methodnames)):
-    plt.scatter(x=[mses[j],], y=[np.random.uniform(size=(1,))/4,], s=70, label=methodnames[j])
+    plt.scatter(x=[mses[j],], y=[np.random.uniform(size=(1,))/3,], s=70, label=methodnames[j])
   sns.despine(top=True, bottom=True, right=True, left=True)
   plt.gca().set_yticks([])
   plt.gca().set_yticklabels([])
@@ -87,6 +87,8 @@ def plot_size_violins(methodnames,results_list):
   # Crop sizes to 99%
   for results in results_list:
     results['sizes'] = torch.clamp(results['sizes'], min=0, max=2)
+    if results['sizes'].var() < 1e-4:
+     results['sizes'] = results['sizes'] + (torch.rand(results['sizes'].shape)-0.5)*0.05
   df = pd.DataFrame({'Interval Length' : torch.cat([results['sizes'] for results in results_list]).tolist(), 'Method': [method.replace(' ','\n') for method in methodnames for i in range(results_list[0]['sizes'].shape[0])]})
   g = sns.violinplot(data=df, x='Method', y='Interval Length', cut=0)
   sns.despine(top=True, right=True)
@@ -101,12 +103,13 @@ def plot_ssr(methodnames,results_list,alpha):
   sns.set(font_scale=1.2)
   sns.set_style("white")
   sns.set_palette(sns.light_palette("salmon"))
-  df = pd.DataFrame({'Interval Length': len(results_list)*['Short', 'Short-Medium', 'Medium-Long', 'Long'], 'Size-Stratified Risk' : torch.cat([results['size-stratified risk'] for results in results_list]).tolist(), 'Method': [method.replace(' ','\n') for method in methodnames for i in range(results_list[0]['size-stratified risk'].shape[0])]})
+  ssrs = torch.cat([results['size-stratified risk'] for results in results_list])
+  df = pd.DataFrame({'Interval Length': len(results_list)*['Short', 'Short-Medium', 'Medium-Long', 'Long'], 'Size-Stratified Risk' : ssrs.tolist(), 'Method': [method.replace(' ','\n') for method in methodnames for i in range(results_list[0]['size-stratified risk'].shape[0])]})
   g = sns.catplot(data=df, kind='bar', x='Method', y='Size-Stratified Risk', hue='Interval Length',legend=False)
   sns.despine(top=True, right=True)
   plt.legend(loc='upper right')
   plt.xlabel('')
-  plt.ylim([None,0.2])
+  plt.ylim([0,0.12])
   plt.locator_params(axis="y", nbins=5)
   #plt.gca().axhline(y=alpha, color='#888888', linewidth=2, linestyle='dashed')
   #plt.text(2,alpha+0.005,r'$\alpha$',color='#888888')
@@ -164,8 +167,8 @@ def plot_images_uq(results):
 
 def generate_plots():
   methodnames = ['Residual Magnitude', 'Gaussian', 'Softmax', 'Quantile Regression']
-  results_filenames = ['outputs/raw/results_bsbcm_softmax_64_0.0001_standard_min-max.pkl','outputs/raw/results_bsbcm_gaussian_64_0.0001_standard_min-max.pkl','outputs/raw/results_bsbcm_residual_magnitude_64_0.0001_standard_min-max.pkl','outputs/raw/results_bsbcm_quantiles_64_0.0001_standard_min-max.pkl']
-  loss_tables_filenames = ['outputs/raw/loss_table_bsbcm_softmax_64_0.0001_standard_min-max.pth','outputs/raw/loss_table_bsbcm_gaussian_64_0.0001_standard_min-max.pth','outputs/raw/loss_table_bsbcm_residual_magnitude_64_0.0001_standard_min-max.pth','outputs/raw/loss_table_bsbcm_quantiles_64_0.0001_standard_min-max.pth']
+  results_filenames = ['outputs/raw/results_bsbcm_residual_magnitude_64_0.0001_standard_min-max.pkl','outputs/raw/results_bsbcm_gaussian_64_0.0001_standard_min-max.pkl','outputs/raw/results_bsbcm_softmax_64_0.0001_standard_min-max.pkl','outputs/raw/results_bsbcm_quantiles_64_0.0001_standard_min-max.pkl']
+  loss_tables_filenames = ['outputs/raw/loss_table_bsbcm_residual_magnitude_64_0.0001_standard_min-max.pth','outputs/raw/loss_table_bsbcm_gaussian_64_0.0001_standard_min-max.pth','outputs/raw/loss_table_bsbcm_softmax_64_0.0001_standard_min-max.pth','outputs/raw/loss_table_bsbcm_quantiles_64_0.0001_standard_min-max.pth']
   # Load results
   results_list = []
   for filename in results_filenames:
