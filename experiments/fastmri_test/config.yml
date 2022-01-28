@@ -20,6 +20,8 @@ parameters:
   model:
     value: "UNet"
   uncertainty_type: 
+    values: ["softmax",]
+  old_uncertainty_type: 
     values: ["quantiles", "residual_magnitude", "gaussian"]
   alpha: 
     value: 0.1
