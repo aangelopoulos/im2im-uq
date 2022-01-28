@@ -46,7 +46,8 @@ def plot_spearman(methodnames,results_list):
 
 def plot_size_violins(methodnames,results_list):
   plt.figure(figsize=(5,5))
-  sns.set(font_scale=1.35)
+  #sns.set(font_scale=1.35) # arXiv size
+  sns.set(font_scale=2) # 2col size
   sns.set_style("white")
   sns.set_palette('pastel')
   # Crop sizes to 99%
@@ -64,17 +65,19 @@ def plot_size_violins(methodnames,results_list):
 
 def plot_ssr(methodnames,results_list,alpha):
   plt.figure(figsize=(4,4))
-  sns.set(font_scale=1.35)
+  #sns.set(font_scale=1.35) # 1col size
+  sns.set(font_scale=2) # 2col size
   sns.set_style("white")
   sns.set_palette(sns.light_palette("salmon"))
   df = pd.DataFrame({'Interval Length': len(results_list)*['Short', 'Short-Medium', 'Medium-Long', 'Long'], 'Size-Stratified Risk' : torch.cat([results['size-stratified risk'] for results in results_list]).tolist(), 'Method': [method.replace(' ','\n') for method in methodnames for i in range(results_list[0]['size-stratified risk'].shape[0])]})
   g = sns.catplot(data=df, kind='bar', x='Method', y='Size-Stratified Risk', hue='Interval Length',legend=False)
-  plt.gca().axhline(y=alpha, color='#888888', linewidth=2, linestyle='dashed')
-  plt.text(0.4,alpha+0.005,r'$\alpha$',color='#888888')
+  #plt.gca().axhline(y=alpha, color='#888888', linewidth=2, linestyle='dashed')
+  #plt.text(0.4,alpha+0.005,r'$\alpha$',color='#888888')
   sns.despine(top=True, right=True)
-  plt.legend(loc='upper right')
+  plt.legend(loc='upper right', fontsize=18) # 2col font size
+  #plt.legend(loc='upper right') # 1col font size
   plt.xlabel('')
-  plt.ylim([None,0.2])
+  plt.ylim([None,0.25])
   plt.locator_params(axis="y", nbins=3)
   plt.gca().set_xticklabels([])
   plt.tight_layout()
@@ -95,7 +98,8 @@ def plot_risks(methodnames,loss_table_list,n,alpha,delta,num_trials=100):
     with open(fname, 'wb') as f:
       pkl.dump(risks_list,f)
   plt.figure(figsize=(5,5))
-  sns.set(font_scale=1.35)
+  #sns.set(font_scale=1.35) # arXiv size
+  sns.set(font_scale=2) # 2col size
   sns.set_style("white")
   sns.set_palette('pastel')
   df = pd.DataFrame({'Method' : [method.replace(' ','\n') for method in methodnames for i in range(num_trials)], 'Risk' : torch.cat(risks_list,dim=0).tolist()})

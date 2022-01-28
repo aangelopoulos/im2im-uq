@@ -21,8 +21,6 @@ parameters:
     value: "UNet"
   uncertainty_type: 
     values: ["softmax",]
-  old_uncertainty_type: 
-    values: ["quantiles", "residual_magnitude", "gaussian"]
   alpha: 
     value: 0.1
   delta: 
@@ -44,17 +42,17 @@ parameters:
   epochs:
     value: 10
   batch_size:
-    value: 78 
+    value: 256 
   lr:
-    values: [0.0001, 0.001]
+    values: [0.001, 0.0001]
   load_from_checkpoint: 
     value: True
   checkpoint_dir:
     value: "experiments/fastmri_test/checkpoints"
   checkpoint_every:
-    value: 1 
+    value: 5 
   validate_every:
-    value: 1 
+    value: 10 
   num_validation_images:
     value: 10
   q_lo:
@@ -72,4 +70,4 @@ parameters:
   input_normalization:
     value: "standard"
   output_normalization:
-    value: "standard"
+    value: "min-max"

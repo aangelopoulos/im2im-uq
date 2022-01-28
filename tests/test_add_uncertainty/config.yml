@@ -1,7 +1,7 @@
 name: "test_add_uncertainty"
 group: "test"
 output_dir: "tests/test_add_uncertainty/outputs/"
-dataset: "bsbcm"
+dataset: "fastmri"
 data_split_percentages: [0.8, 0.1, 0.1, 0.0]
 model: "UNet"
 uncertainty_type: "softmax"
