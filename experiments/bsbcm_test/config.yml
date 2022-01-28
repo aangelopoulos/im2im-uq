@@ -26,13 +26,13 @@ parameters:
   delta: 
     value: 0.1
   num_lambdas: 
-    value: 1000
+    value: 2000
   rcps_loss: 
     value: "fraction_missed"
   minimum_lambda_softmax:
     value: 0 
   maximum_lambda_softmax: 
-    value: 6 
+    value: 12 
   minimum_lambda:
     value: 0 
   maximum_lambda:
@@ -44,7 +44,7 @@ parameters:
   batch_size:
     value: 64 
   lr:
-    values: [0.001, 0.0001]
+    values: [0.0001,]
   load_from_checkpoint: 
     value: True
   checkpoint_dir:

@@ -40,11 +40,14 @@ formatted as -.4)."""
   major_formatter = ticker.FuncFormatter(my_formatter)
 
   plt.figure(figsize=(12,1.75))
+  sns.set(font_scale=1.3) # 1col scaling
+  sns.set_style("white")
   sns.set_palette('pastel')
   # Crop sizes to 99%
   mses = np.array([results['mse'] for results in results_list])
   #df = pd.DataFrame({'Spearman Rank Correlation' : [results['spearman'] for results in results_list], 'Method': [method.replace(' ','\n') for method in methodnames]})
   #g = sns.scatterplot(data=df, x='Method', y='Spearman Rank Correlation', kind='bar')
+  methodnames = ['Residual Magnitude (RM)', 'Gaussian (G)', 'Softmax (S)', 'Quantile Regression (QR)'] # For ICML only!
   for j in range(len(methodnames)):
     plt.scatter(x=[mses[j],], y=[np.random.uniform(size=(1,))/3,], s=70, label=methodnames[j])
   sns.despine(top=True, bottom=True, right=True, left=True)
@@ -81,7 +84,8 @@ def plot_spearman(methodnames,results_list):
 
 def plot_size_violins(methodnames,results_list):
   plt.figure(figsize=(5,5))
-  sns.set(font_scale=1.2)
+  #sns.set(font_scale=1.2) # 1col scaling
+  sns.set(font_scale=2) # 2col scaling
   sns.set_style("white")
   sns.set_palette('pastel')
   # Crop sizes to 99%
@@ -89,6 +93,7 @@ def plot_size_violins(methodnames,results_list):
     results['sizes'] = torch.clamp(results['sizes'], min=0, max=2)
     if results['sizes'].var() < 1e-4:
      results['sizes'] = results['sizes'] + (torch.rand(results['sizes'].shape)-0.5)*0.05
+  methodnames = ['RM', 'G', 'S', 'QR'] # For ICML only!
   df = pd.DataFrame({'Interval Length' : torch.cat([results['sizes'] for results in results_list]).tolist(), 'Method': [method.replace(' ','\n') for method in methodnames for i in range(results_list[0]['sizes'].shape[0])]})
   g = sns.violinplot(data=df, x='Method', y='Interval Length', cut=0)
   sns.despine(top=True, right=True)
@@ -100,17 +105,20 @@ def plot_size_violins(methodnames,results_list):
 
 def plot_ssr(methodnames,results_list,alpha):
   plt.figure(figsize=(4,4))
-  sns.set(font_scale=1.2)
+  #sns.set(font_scale=1.2) # 2col scaling
+  sns.set(font_scale=2) # 1col scaling
   sns.set_style("white")
   sns.set_palette(sns.light_palette("salmon"))
   ssrs = torch.cat([results['size-stratified risk'] for results in results_list])
+  methodnames = ['RM', 'G', 'S', 'QR'] # For ICML only!
   df = pd.DataFrame({'Interval Length': len(results_list)*['Short', 'Short-Medium', 'Medium-Long', 'Long'], 'Size-Stratified Risk' : ssrs.tolist(), 'Method': [method.replace(' ','\n') for method in methodnames for i in range(results_list[0]['size-stratified risk'].shape[0])]})
   g = sns.catplot(data=df, kind='bar', x='Method', y='Size-Stratified Risk', hue='Interval Length',legend=False)
   sns.despine(top=True, right=True)
-  plt.legend(loc='upper right')
+  #plt.legend(loc='upper right') # 1col scaling
+  plt.legend(loc='upper right', fontsize=18) # 2col scaling
   plt.xlabel('')
-  plt.ylim([0,0.12])
-  plt.locator_params(axis="y", nbins=5)
+  plt.ylim([0,0.17])
+  plt.locator_params(axis="y", nbins=3)
   #plt.gca().axhline(y=alpha, color='#888888', linewidth=2, linestyle='dashed')
   #plt.text(2,alpha+0.005,r'$\alpha$',color='#888888')
   plt.tight_layout()
@@ -131,16 +139,18 @@ def plot_risks(methodnames,loss_table_list,n,alpha,delta,num_trials=100):
     with open(fname, 'wb') as f:
       pkl.dump(risks_list,f)
   plt.figure(figsize=(5,5))
-  sns.set(font_scale=1.2)
+  #sns.set(font_scale=1.2) # 2col scaling
+  sns.set(font_scale=2) # 1col scaling
   sns.set_style("white")
   sns.set_palette('pastel')
+  methodnames = ['RM', 'G', 'S', 'QR'] # For ICML only!
   df = pd.DataFrame({'Method' : [method.replace(' ','\n') for method in methodnames for i in range(num_trials)], 'Risk' : torch.cat(risks_list,dim=0).tolist()})
   g = sns.violinplot(data=df, x='Method', y='Risk')
   plt.gca().axhline(y=alpha, color='#888888', linewidth=2, linestyle='dashed')
   sns.despine(top=True, right=True)
   plt.xlabel('')
   plt.locator_params(axis="y", nbins=5)
-  plt.text(3.2,alpha-0.003,r'$\alpha$',color='#888888')
+  plt.text(3.2,alpha-0.004,r'$\alpha$',color='#888888')
   plt.tight_layout()
   plt.savefig('outputs/bsbcm-risks.pdf',bbox_inches="tight")
 
@@ -167,8 +177,8 @@ def plot_images_uq(results):
 
 def generate_plots():
   methodnames = ['Residual Magnitude', 'Gaussian', 'Softmax', 'Quantile Regression']
-  results_filenames = ['outputs/raw/results_bsbcm_residual_magnitude_64_0.0001_standard_min-max.pkl','outputs/raw/results_bsbcm_gaussian_64_0.0001_standard_min-max.pkl','outputs/raw/results_bsbcm_softmax_64_0.0001_standard_min-max.pkl','outputs/raw/results_bsbcm_quantiles_64_0.0001_standard_min-max.pkl']
-  loss_tables_filenames = ['outputs/raw/loss_table_bsbcm_residual_magnitude_64_0.0001_standard_min-max.pth','outputs/raw/loss_table_bsbcm_gaussian_64_0.0001_standard_min-max.pth','outputs/raw/loss_table_bsbcm_softmax_64_0.0001_standard_min-max.pth','outputs/raw/loss_table_bsbcm_quantiles_64_0.0001_standard_min-max.pth']
+  results_filenames = ['outputs/raw/results_bsbcm_residual_magnitude_64_0.0001_standard_min-max.pkl','outputs/raw/results_bsbcm_gaussian_64_0.0001_standard_min-max.pkl','outputs/raw/results_bsbcm_softmax_64_0.001_standard_min-max.pkl','outputs/raw/results_bsbcm_quantiles_64_0.0001_standard_min-max.pkl']
+  loss_tables_filenames = ['outputs/raw/loss_table_bsbcm_residual_magnitude_64_0.0001_standard_min-max.pth','outputs/raw/loss_table_bsbcm_gaussian_64_0.0001_standard_min-max.pth','outputs/raw/loss_table_bsbcm_softmax_64_0.001_standard_min-max.pth','outputs/raw/loss_table_bsbcm_quantiles_64_0.0001_standard_min-max.pth']
   # Load results
   results_list = []
   for filename in results_filenames:
@@ -181,9 +191,10 @@ def generate_plots():
   alpha = 0.1
   delta = 0.1
   n = loss_tables_list[0].shape[0]//2
-  plot_risks(methodnames,loss_tables_list,n,alpha,delta)
   # Plot MSEs 
   plot_mse(methodnames,results_list)
+  # Plot risks
+  plot_risks(methodnames,loss_tables_list,n,alpha,delta)
   # Plot spearman correlations
   plot_spearman(methodnames,results_list)
   # Plot size-stratified risks 
