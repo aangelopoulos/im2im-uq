@@ -39,7 +39,10 @@ formatted as -.4)."""
       return val_str
   major_formatter = ticker.FuncFormatter(my_formatter)
 
+  #sns.set(font_scale=1.2) # arXiv scaling
   plt.figure(figsize=(12,1.75))
+  sns.set(font_scale=1.3) # 1col scaling
+  sns.set_style("white")
   sns.set_palette('pastel')
   # Crop sizes to 99%
   mses = np.array([results['mse'] for results in results_list])
@@ -81,7 +84,8 @@ def plot_spearman(methodnames,results_list):
 
 def plot_size_violins(methodnames,results_list):
   plt.figure(figsize=(5,5))
-  sns.set(font_scale=1.2)
+  #sns.set(font_scale=1.2) # arXiv scaling
+  sns.set(font_scale=1.7) # ICML scaling
   sns.set_style("white")
   sns.set_palette('pastel')
   # Crop sizes to 99%
@@ -100,7 +104,8 @@ def plot_size_violins(methodnames,results_list):
 
 def plot_ssr(methodnames,results_list,alpha):
   plt.figure(figsize=(4,4))
-  sns.set(font_scale=1.2)
+  #sns.set(font_scale=1.2) # arXiv scaling
+  sns.set(font_scale=1.7) # ICML scaling
   sns.set_style("white")
   sns.set_palette(sns.light_palette("salmon"))
   ssrs = torch.cat([results['size-stratified risk'] for results in results_list])
@@ -131,7 +136,8 @@ def plot_risks(methodnames,loss_table_list,n,alpha,delta,num_trials=100):
     with open(fname, 'wb') as f:
       pkl.dump(risks_list,f)
   plt.figure(figsize=(5,5))
-  sns.set(font_scale=1.2)
+  #sns.set(font_scale=1.2) # arXiv scaling
+  sns.set(font_scale=1.7) # ICML scaling
   sns.set_style("white")
   sns.set_palette('pastel')
   df = pd.DataFrame({'Method' : [method.replace(' ','\n') for method in methodnames for i in range(num_trials)], 'Risk' : torch.cat(risks_list,dim=0).tolist()})

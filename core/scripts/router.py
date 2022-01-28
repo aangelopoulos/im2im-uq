@@ -68,7 +68,7 @@ if __name__ == "__main__":
     path = '/clusterfs/abc/angelopoulos/care/Isotropic_Drosophila/train_data/data_label.npz'
     dataset = CAREDrosophilaDataset(path, num_instances='all', normalize=wandb.config["output_normalization"])
   elif wandb.config["dataset"] == "fastmri":
-    path = '/home/aa/data/singlecoil_train/'
+    path = '/clusterfs/abc/angelopoulos/fastmri/knee/singlecoil_train/'
     mask_info = {'type': 'equispaced', 'center_fraction' : [0.08], 'acceleration' : [4]}
     dataset = FastMRIDataset(path, normalize_input=wandb.config["input_normalization"], normalize_output = wandb.config["output_normalization"], mask_info=mask_info)
     dataset = normalize_dataset(dataset)

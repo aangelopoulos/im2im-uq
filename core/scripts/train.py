@@ -123,13 +123,13 @@ def train_net(net,
         wandb.init(config=config)
         wandb.watch(net, log_freq = 100)
 
-    run_validation(net,
-                   val_loader,
-                   val_dataset,
-                   device,
-                   global_step,
-                   starting_epoch,
-                   config)
+    #run_validation(net,
+    #               val_loader,
+    #               val_dataset,
+    #               device,
+    #               global_step,
+    #               starting_epoch,
+    #               config)
 
     for epoch in range(starting_epoch,epochs):
         net.train()

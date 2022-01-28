@@ -38,7 +38,7 @@ if __name__ == "__main__":
       #dataset = normalize_dataset(dataset)
       num_inputs = 1 
     elif config["dataset"] == "fastmri":
-      path = '/home/aa/data/singlecoil_train/'
+      path = '/clusterfs/abc/angelopoulos/fastmri/knee/singlecoil_train/'
       mask_info = {'type': 'equispaced', 'center_fraction' : [0.08], 'acceleration' : [4]}
       dataset = FastMRIDataset(path, normalize_input=config["input_normalization"], normalize_output = config["output_normalization"], mask_info=mask_info)
       dataset = normalize_dataset(dataset)
