@@ -39,6 +39,7 @@ formatted as -.4)."""
       return val_str
   major_formatter = ticker.FuncFormatter(my_formatter)
 
+  #sns.set(font_scale=1.2) # arXiv scaling
   plt.figure(figsize=(12,1.75))
   sns.set(font_scale=1.3) # 1col scaling
   sns.set_style("white")
