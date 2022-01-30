@@ -104,6 +104,7 @@ def train_net(net,
       train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=0)
     except:
       train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
+
     val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
     net = net.to(device=device)
     if torch.cuda.device_count() > 1:
@@ -181,7 +182,7 @@ def train_net(net,
                   except OSError:
                       pass
                   checkpoint_fname = checkpoint_dir + f'/CP_epoch{epoch + 1}_' + config['dataset'] + "_" + config['uncertainty_type'] + "_" + str(config['batch_size']) + "_" + str(config['lr']) + "_" + config['input_normalization'] + "_" + config['output_normalization'].replace('.','_') + '.pth'
-                  torch.save(net, checkpoint_fname)
+                  torch.save(net.cpu(), checkpoint_fname)
                   #torch.save(net.module, checkpoint_fname)
 
                   logging.info(f'Checkpoint {epoch + 1} saved !')

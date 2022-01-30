@@ -174,9 +174,9 @@ def plot_images_uq(results):
     im.save(foldername + "mixed_output.png")
 
 def generate_plots():
-  methodnames = ['Gaussian','Residual Magnitude','Quantile Regression']
-  results_filenames = ['outputs/raw/results_fastmri_gaussian_78_0.001_standard_standard.pkl','outputs/raw/results_fastmri_residual_magnitude_78_0.0001_standard_standard.pkl','outputs/raw/results_fastmri_quantiles_78_0.0001_standard_standard.pkl']
-  loss_tables_filenames = ['outputs/raw/loss_table_fastmri_gaussian_78_0.001_standard_standard.pth','outputs/raw/loss_table_fastmri_residual_magnitude_78_0.0001_standard_standard.pth','outputs/raw/loss_table_fastmri_quantiles_78_0.0001_standard_standard.pth']
+  methodnames = ['Softmax1', 'Softmax2', 'Gaussian','Residual Magnitude','Quantile Regression']
+  results_filenames = ['outputs/raw/results_fastmri_softmax_256_0.001_standard_min-max.pkl','outputs/raw/results_fastmri_softmax_256_0.0001_standard_min-max.pkl','outputs/raw/results_fastmri_gaussian_78_0.001_standard_standard.pkl','outputs/raw/results_fastmri_residual_magnitude_78_0.0001_standard_standard.pkl','outputs/raw/results_fastmri_quantiles_78_0.0001_standard_standard.pkl']
+  loss_tables_filenames = ['outputs/raw/loss_table_fastmri_softmax_256_0.001_standard_min-max.pth','outputs/raw/loss_table_fastmri_softmax_256_0.0001_standard_min-max.pth','outputs/raw/loss_table_fastmri_gaussian_78_0.001_standard_standard.pth','outputs/raw/loss_table_fastmri_residual_magnitude_78_0.0001_standard_standard.pth','outputs/raw/loss_table_fastmri_quantiles_78_0.0001_standard_standard.pth']
   # Load results
   results_list = []
   for filename in results_filenames:
@@ -188,6 +188,7 @@ def generate_plots():
   # Plot risks
   alpha = 0.1
   delta = 0.1
+  pdb.set_trace()
   n = loss_tables_list[0].shape[0]//2
   # Plot mse
   plot_mse(methodnames,results_list)

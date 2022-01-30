@@ -104,7 +104,6 @@ if __name__ == "__main__":
     wandb.log({"epoch": config['epochs']+1, "Upper length": examples_upper_length})
                                                                                                                                      """
     # Evaluate the risk and size
-    pdb.set_trace()
     risk, sizes, spearman, stratified_risk, mse = eval_set_metrics(model, val_dataset, config)
     print(f"Risk: {risk}  |  Mean size: {sizes.mean()}  |  Spearman: {spearman}  |  stratified risk: {stratified_risk}  | MSE: {mse}")
     wandb.log({"risk": risk, "mean_size":sizes.mean(), "Spearman":spearman, "Size-Stratified Risk":stratified_risk, "MSE": mse})
