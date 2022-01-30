@@ -38,9 +38,9 @@ parameters:
   maximum_lambda:
     value: 6 
   device:
-    value: "cuda"
+    value: "cuda:0"
   epochs:
-    value: 10
+    value: 20
   batch_size:
     value: 256 
   lr:
@@ -50,7 +50,7 @@ parameters:
   checkpoint_dir:
     value: "experiments/fastmri_test/checkpoints"
   checkpoint_every:
-    value: 5 
+    value: 1 
   validate_every:
     value: 10 
   num_validation_images:

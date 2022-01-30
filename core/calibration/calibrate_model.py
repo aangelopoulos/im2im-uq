@@ -12,7 +12,7 @@ import pdb
 
 def get_rcps_losses(model, dataset, rcps_loss_fn, lam, device):
   losses = []
-  dataloader = DataLoader(dataset, batch_size=64, shuffle=False, num_workers=0) 
+  dataloader = DataLoader(dataset, batch_size=64, shuffle=False, num_workers=3, pin_memory=True) 
   for batch in dataloader:
     sets = model.nested_sets_from_output(batch,lam) 
     losses = losses + [rcps_loss_fn(sets, labels),]
@@ -20,7 +20,7 @@ def get_rcps_losses(model, dataset, rcps_loss_fn, lam, device):
 
 def get_rcps_losses_from_outputs(model, out_dataset, rcps_loss_fn, lam, device):
   losses = []
-  dataloader = DataLoader(out_dataset, batch_size=64, shuffle=False, num_workers=0) 
+  dataloader = DataLoader(out_dataset, batch_size=64, shuffle=False, num_workers=3, pin_memory=True) 
   model = model.to(device)
   for batch in dataloader:
     x, labels = batch
@@ -32,7 +32,7 @@ def get_rcps_metrics_from_outputs(model, out_dataset, rcps_loss_fn, device):
   losses = []
   sizes = []
   residuals = []
-  dataloader = DataLoader(out_dataset, batch_size=64, shuffle=False, num_workers=0) 
+  dataloader = DataLoader(out_dataset, batch_size=64, shuffle=False, num_workers=3, pin_memory=True) 
   model = model.to(device)
   for batch in dataloader:
     x, labels = batch
@@ -98,28 +98,26 @@ def calibrate_model(model, dataset, config):
     print("Initialize labels")
     if config['dataset'] == 'temca':
       labels = torch.cat([x[1].unsqueeze(0).to('cpu') for x in iter(dataset)], dim=0)
+      outputs = torch.cat([model(x[0].unsqueeze(0).to(device)).to('cpu') for x in iter(dataset)])
+      print("Labels initialized.")
     else:
       labels_shape = list(dataset[0][1].unsqueeze(0).shape)
       labels_shape[0] = len(dataset)
-      print(f"Desired label shape: {labels_shape}")
       labels = torch.zeros(tuple(labels_shape), device='cpu')
-      for i in range(len(dataset)):
-        labels[i] = dataset[i][1].cpu()
-    print("Labels initialized.")
-
-    if config['dataset'] == 'temca': 
-      outputs = torch.cat([model(x[0].unsqueeze(0).to(device)).to('cpu') for x in iter(dataset)])
-    else:
-      print("Initialize outputs")
       outputs_shape = list(model(dataset[0][0].unsqueeze(0).to(device)).shape)
       outputs_shape[0] = len(dataset)
-      #outputs_shape[1] = 25 
-      print(f"Output shape: {outputs_shape}")
       outputs = torch.zeros(tuple(outputs_shape),device='cpu')
-      print("Computing outputs")
-      for i in range(len(dataset)):
-        print(i)
-        outputs[i,:,:,:,:] = model(dataset[i][0].unsqueeze(0).to(device)).cpu()
+      print("Collecting dataset")
+      tempDL = DataLoader(dataset, num_workers=3, batch_size=config['batch_size'], pin_memory=True) 
+      counter = 0
+      for batch in tqdm(tempDL):
+        outputs[counter:counter+batch[0].shape[0],:,:,:,:] = model(batch[0].to(device)).cpu()
+        labels[counter:counter+batch[1].shape[0]] = batch[1]
+        counter += batch[0].shape[0]
+      #for i in tqdm(range(len(dataset))):
+      #  labels[i] = dataset[i][1].cpu()
+      #  outputs[i,:,:,:,:] = model(dataset[i][0].unsqueeze(0).to(device)).cpu()
+
     print("Output dataset")
     out_dataset = TensorDataset(outputs,labels.cpu())
     dlambda = lambdas[1]-lambdas[0]

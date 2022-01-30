@@ -39,8 +39,14 @@ def softmax_nested_sets_from_output(model, output, lam=None):
 
     lower_quantile = (cumsum <= 0.05).float().sum(dim=1)/num_softmax
     upper_quantile = (cumsum <= 0.95).float().sum(dim=1)/num_softmax
-
     prediction = torch.argmax(output, dim=1)/num_softmax
+
+    # Ensure the sets dont collapse
+    lower_quantile[prediction==lower_quantile] -= 1/num_softmax
+    upper_quantile[prediction==upper_quantile] += 1/num_softmax
+    lower_quantile = lower_quantile.clamp(min=0,max=1)
+    upper_quantile = upper_quantile.clamp(min=0,max=1)
+
     lower_edge = prediction - (prediction-lower_quantile).relu()*lam
     upper_edge = prediction + (upper_quantile-prediction).relu()*lam
 
