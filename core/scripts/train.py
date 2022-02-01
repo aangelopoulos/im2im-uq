@@ -133,6 +133,7 @@ def train_net(net,
     #               config)
 
     for epoch in range(starting_epoch,epochs):
+        net = net.to(device)
         net.train()
         print('epoch ' + str(epoch+1) + '\n')
         epoch_loss = 0
@@ -182,7 +183,7 @@ def train_net(net,
                   except OSError:
                       pass
                   checkpoint_fname = checkpoint_dir + f'/CP_epoch{epoch + 1}_' + config['dataset'] + "_" + config['uncertainty_type'] + "_" + str(config['batch_size']) + "_" + str(config['lr']) + "_" + config['input_normalization'] + "_" + config['output_normalization'].replace('.','_') + '.pth'
-                  torch.save(net.cpu(), checkpoint_fname)
+                  torch.save(net.cpu().module, checkpoint_fname)
                   #torch.save(net.module, checkpoint_fname)
 
                   logging.info(f'Checkpoint {epoch + 1} saved !')
