@@ -20,7 +20,7 @@ parameters:
   model:
     value: "UNet"
   uncertainty_type: 
-    values: ["softmax",]
+    values: ["gaussian","residual_magnitude","quantiles"]
   alpha: 
     value: 0.1
   delta: 
@@ -32,7 +32,7 @@ parameters:
   minimum_lambda_softmax:
     value: 0 
   maximum_lambda_softmax: 
-    value: 2 
+    value: 1.2 
   minimum_lambda:
     value: 0 
   maximum_lambda:
@@ -42,9 +42,9 @@ parameters:
   epochs:
     value: 20
   batch_size:
-    value: 256 
+    value: 64 
   lr:
-    values: [0.001, 0.0001]
+    values: [0.0001,0.001]
   load_from_checkpoint: 
     value: True
   checkpoint_dir:

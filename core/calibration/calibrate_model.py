@@ -12,7 +12,7 @@ import pdb
 
 def get_rcps_losses(model, dataset, rcps_loss_fn, lam, device):
   losses = []
-  dataloader = DataLoader(dataset, batch_size=64, shuffle=False, num_workers=3, pin_memory=True) 
+  dataloader = DataLoader(dataset, batch_size=64, shuffle=False, num_workers=0, pin_memory=True) 
   for batch in dataloader:
     sets = model.nested_sets_from_output(batch,lam) 
     losses = losses + [rcps_loss_fn(sets, labels),]
@@ -20,7 +20,7 @@ def get_rcps_losses(model, dataset, rcps_loss_fn, lam, device):
 
 def get_rcps_losses_from_outputs(model, out_dataset, rcps_loss_fn, lam, device):
   losses = []
-  dataloader = DataLoader(out_dataset, batch_size=64, shuffle=False, num_workers=3, pin_memory=True) 
+  dataloader = DataLoader(out_dataset, batch_size=64, shuffle=False, num_workers=0, pin_memory=True) 
   model = model.to(device)
   for batch in dataloader:
     x, labels = batch
@@ -32,7 +32,7 @@ def get_rcps_metrics_from_outputs(model, out_dataset, rcps_loss_fn, device):
   losses = []
   sizes = []
   residuals = []
-  dataloader = DataLoader(out_dataset, batch_size=64, shuffle=False, num_workers=3, pin_memory=True) 
+  dataloader = DataLoader(out_dataset, batch_size=64, shuffle=False, num_workers=0, pin_memory=True) 
   model = model.to(device)
   for batch in dataloader:
     x, labels = batch
@@ -108,7 +108,7 @@ def calibrate_model(model, dataset, config):
       outputs_shape[0] = len(dataset)
       outputs = torch.zeros(tuple(outputs_shape),device='cpu')
       print("Collecting dataset")
-      tempDL = DataLoader(dataset, num_workers=3, batch_size=config['batch_size'], pin_memory=True) 
+      tempDL = DataLoader(dataset, num_workers=0, batch_size=config['batch_size'], pin_memory=True) 
       counter = 0
       for batch in tqdm(tempDL):
         outputs[counter:counter+batch[0].shape[0],:,:,:,:] = model(batch[0].to(device)).cpu()
