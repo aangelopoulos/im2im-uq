@@ -189,7 +189,7 @@ def train_net(net,
                       pass
                   checkpoint_fname = checkpoint_dir + f'/CP_epoch{epoch + 1}_' + config['dataset'] + "_" + config['uncertainty_type'] + "_" + str(config['batch_size']) + "_" + str(config['lr']) + "_" + config['input_normalization'] + "_" + config['output_normalization'].replace('.','_') + '.pth'
                   torch.save(net.cpu().module, checkpoint_fname)
-                  #torch.save(net.module, checkpoint_fname)
+                  #torch.save(net.module, checkpoint_fname) #Without wandb, you don't need the .module call
 
                   logging.info(f'Checkpoint {epoch + 1} saved !')
         net.eval()
