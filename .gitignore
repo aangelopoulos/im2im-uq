@@ -1,3 +1,6 @@
+experiments/bsbcm_test/checkpoints/
+experiments/fastmri_test/checkpoints/
+experiments/temca_test/checkpoints/
 experiments/bsbcm_test/outputs/
 experiments/fastmri_test/outputs/
 experiments/temca_test/outputs/

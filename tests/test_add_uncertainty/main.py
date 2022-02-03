@@ -42,6 +42,7 @@ if __name__ == "__main__":
       mask_info = {'type': 'equispaced', 'center_fraction' : [0.08], 'acceleration' : [4]}
       dataset = FastMRIDataset(path, normalize_input=config["input_normalization"], normalize_output = config["output_normalization"], mask_info=mask_info)
       dataset = normalize_dataset(dataset)
+      pdb.set_trace()
       config.update(dataset.norm_params)
       num_inputs = 1 
     elif config["dataset"] == "temca":
