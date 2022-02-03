@@ -105,6 +105,8 @@ def train_net(net,
     except:
       train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
 
+    print("Train loader!")
+
     val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
     net = net.to(device=device)
     if torch.cuda.device_count() > 1:
@@ -112,11 +114,13 @@ def train_net(net,
       # dim = 0 [30, xxx] -> [10, ...], [10, ...], [10, ...] on 3 GPUs
       net = DataParallelPassthrough(net, device_ids=[0,1])
 
+    print("DataParallel!")
     net = net.to(device=device)
 
     optimizer = optim.Adam(net.parameters(), lr=lr)
 
     # WandB magic
+    print("WandB Magic!")
     if starting_epoch == 0:
       try:
         wandb.watch(net, log_freq = 100)
@@ -132,6 +136,7 @@ def train_net(net,
     #               starting_epoch,
     #               config)
 
+    print("Start Training!")
     for epoch in range(starting_epoch,epochs):
         net = net.to(device)
         net.train()
