@@ -112,7 +112,7 @@ def train_net(net,
     if torch.cuda.device_count() > 1:
       print("Let's use", torch.cuda.device_count(), "GPUs!")
       # dim = 0 [30, xxx] -> [10, ...], [10, ...], [10, ...] on 3 GPUs
-      net = DataParallelPassthrough(net, device_ids=[0,1])
+      net = DataParallelPassthrough(net) # If you only want to train on two GPUs, add device_ids=[0,1]
 
     print("DataParallel!")
     net = net.to(device=device)
@@ -128,6 +128,7 @@ def train_net(net,
         wandb.init(config=config)
         wandb.watch(net, log_freq = 100)
 
+    # If you want, you can run an initial validation to see how bad a random net is
     #run_validation(net,
     #               val_loader,
     #               val_dataset,
