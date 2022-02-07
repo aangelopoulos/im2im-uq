@@ -1,9 +1,9 @@
 # im2im-uq
 A platform for image-to-image regression with rigorous, distribution-free uncertainty quantification.
 
-<center>
+<div align="center">
 <img src="./teaser-whitebackground.png" width="70%" />
-</center>
+</div>
 
 ## Summary
 This repository provides a convenient way to train deep-learning models in PyTorch for image-to-image regression---any task where the input and output are both images---along with rigorous uncertainty quantification.
