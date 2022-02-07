@@ -1,1 +1,0 @@
-from .CAREDrosophilaDataset import CAREDrosophilaDataset

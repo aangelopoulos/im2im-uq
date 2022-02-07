@@ -23,7 +23,6 @@ from core.datasets.utils import normalize_dataset
 from core.models.trunks.unet import UNet
 
 # Datasets
-from core.datasets.CAREDrosophila import CAREDrosophilaDataset
 from core.datasets.bsbcm import BSBCMDataset
 from core.datasets.fastmri import FastMRIDataset
 from core.datasets.temca import TEMCADataset
@@ -64,9 +63,6 @@ if __name__ == "__main__":
   elif wandb.config["dataset"] == "bsbcm":
     path = '/home/aa/data/bsbcm'
     dataset = BSBCMDataset(path, num_instances='all', normalize=wandb.config["output_normalization"])
-  elif wandb.config["dataset"] == "CAREDrosophila":
-    path = '/clusterfs/abc/angelopoulos/care/Isotropic_Drosophila/train_data/data_label.npz'
-    dataset = CAREDrosophilaDataset(path, num_instances='all', normalize=wandb.config["output_normalization"])
   elif wandb.config["dataset"] == "fastmri":
     path = '/clusterfs/abc/angelopoulos/fastmri/knee/singlecoil_train/'
     mask_info = {'type': 'equispaced', 'center_fraction' : [0.08], 'acceleration' : [4]}

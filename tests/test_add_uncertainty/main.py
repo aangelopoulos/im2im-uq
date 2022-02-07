@@ -3,7 +3,6 @@ sys.path.insert(1, os.path.join(sys.path[0], '../../'))
 import random, copy
 import torch
 import torch.nn as nn
-from core.datasets.CAREDrosophila import CAREDrosophilaDataset
 from core.datasets.fastmri import FastMRIDataset
 from core.datasets.bsbcm import BSBCMDataset
 from core.datasets.temca import TEMCADataset
@@ -32,11 +31,6 @@ if __name__ == "__main__":
       path = '/home/aa/data/bsbcm'
       dataset = BSBCMDataset(path, num_instances='all', normalize=config["output_normalization"])
       num_inputs = 2
-    elif config["dataset"] == "CAREDrosophila":
-      path = '/clusterfs/abc/angelopoulos/care/Isotropic_Drosophila/train_data/data_label.npz'
-      dataset = CAREDrosophilaDataset(path, num_instances='all', normalize='min-max')
-      #dataset = normalize_dataset(dataset)
-      num_inputs = 1 
     elif config["dataset"] == "fastmri":
       path = '/clusterfs/abc/angelopoulos/fastmri/knee/singlecoil_train/'
       mask_info = {'type': 'equispaced', 'center_fraction' : [0.08], 'acceleration' : [4]}

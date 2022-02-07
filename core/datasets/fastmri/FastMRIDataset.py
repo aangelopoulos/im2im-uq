@@ -46,7 +46,7 @@ def et_query(
 
     return str(value.text)
 
-
+# Much of this code was taken from https://github.com/facebookresearch/fastMRI
 class FastMRIDataset(Dataset):
     def __init__(self, path, normalize_input, normalize_output, mask_info, num_volumes=None, slice_sample_period=1):
         # Normalization parameters will be None at first
