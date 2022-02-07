@@ -1,4 +1,4 @@
-name: im2im 
+name: im2im-uq
 channels:
   - anaconda
   - pytorch
