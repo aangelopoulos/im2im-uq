@@ -63,13 +63,13 @@ To add a new dataset, use the following procedure.
 * In ```core/datasets```, make a new folder for your dataset ```core/datasets/new_dataset```.
 * Make a valid [PyTorch ```Dataset```](https://pytorch.org/tutorials/beginner/data_loading_tutorial.html) class for your new dataset. The most critical part is writing a ```__get_item__``` method that returns an image-image pair in CxHxW order; see ```core/datasets/bsbcm/BSBCMDataset.py``` for a simple example.
 * Make a file ```core/datasets/new_dataset/__init__.py``` and export your dataset by adding the line ```from .NewDataset.py import NewDatasetClass``` (substituting in your filename and classname appropriately).
-* Edit ```core/scripts/router.py``` to load your new dataset, near [Line 64](https://github.com/aangelopoulos/im2im-uq/blob/9e1b71378636e842b0a9e8c7b87635762422b86c/core/scripts/router.py#L64), following the pattern therein.
+* Edit ```core/scripts/router.py``` to load your new dataset, near [Line 64](https://github.com/aangelopoulos/im2im-uq/blob/9e1b71378636e842b0a9e8c7b87635762422b86c/core/scripts/router.py#L64), following the pattern therein. You will also need to import your dataset object.
 * Populate your new config file ```experiments/new_experiment/config.yml``` with the correct directories and experiment name.
 * Execute ```wandb sweep experiments/new_experiment/config.yml``` and proceed as normal!
 
 ## Adding new models
 In our system, there are two parts to a model---the base architecture, which we call a ```trunk``` (e.g. a U-Net), and the final layer.
-Defining a trunk is as simple as writing a regular PyTorch module; see [```core/models/trunks/unet.py```](https://github.com/aangelopoulos/im2im-uq/blob/53a80bd914ee32741d795e451be7449836f8629e/core/models/trunks/unet.py#L10) for an example.
+Defining a trunk is as simple as writing a regular PyTorch module and adding it near [Line 87 of ```core/scripts/router.py```](https://github.com/aangelopoulos/im2im-uq/blob/1f7965e169a790548b2b8db69fa005b7ecbfc40d/core/scripts/router.py#L87) (you will also need to import it); see [```core/models/trunks/unet.py```](https://github.com/aangelopoulos/im2im-uq/blob/53a80bd914ee32741d795e451be7449836f8629e/core/models/trunks/unet.py#L10) for an example.
 
 * Define the "trunk" of your model (everything but the last layer) in ```core/models/trunks```
 * Define the final layer of your model in ```core/models/finallayers```.  The final layer must output a lower-endpoint, prediction, and upper-endpoint for each pixel, defining an uncertainty interval for use in ```core/models/add_uncertainty.py```.
