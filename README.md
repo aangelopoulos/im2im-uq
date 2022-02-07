@@ -54,7 +54,7 @@ You will need to execute
 conda env create -f environment.yml
 conda activate im2im-uq
 ```
-You will also need to go through the Weights and Biases setup process that initiates when you run your first sweep.
+You will also need to go through the [Weights and Biases](https://wandb.ai/) setup process that initiates when you run your first sweep. You may need to make an account on their website.
 
 ## Reproducing the results
 
