@@ -1,5 +1,5 @@
 # im2im-uq
-A platform for image-to-image translation with rigorous, distribution-free uncertainty quantification.
+A platform for image-to-image regression with rigorous, distribution-free uncertainty quantification.
 
 ## Installation
 You will need to execute
