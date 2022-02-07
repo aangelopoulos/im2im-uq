@@ -4,13 +4,10 @@ import torch
 import torch.nn as nn
 from core.models.finallayers.quantile_layer import QuantileRegressionLayer, quantile_regression_loss_fn, quantile_regression_nested_sets_from_output
 from core.models.finallayers.quantile_l1_layer import QuantileRegressionL1Layer, quantile_regression_l1_loss_fn, quantile_regression_l1_nested_sets_from_output
-from core.models.finallayers.quantile_lpips_layer import QuantileRegressionLPIPSLayer, quantile_regression_lpips_nested_sets_from_output
 from core.models.finallayers.gaussian_layer import GaussianRegressionLayer, gaussian_regression_loss_fn, gaussian_regression_nested_sets_from_output
 from core.models.finallayers.residual_magnitude_layer import ResidualMagnitudeLayer, residual_magnitude_loss_fn, residual_magnitude_nested_sets_from_output
 from core.models.finallayers.residual_magnitude_l1_layer import ResidualMagnitudeL1Layer, residual_magnitude_l1_loss_fn, residual_magnitude_l1_nested_sets_from_output
 from core.models.finallayers.softmax_layer import SoftmaxLayer, softmax_loss_fn, softmax_nested_sets_from_output
-from core.models.trunks.wnet import WNet
-from core.models.trunks.unet import UNet
 from core.utils import standard_to_minmax
 import json
 
@@ -51,18 +48,9 @@ class ModelWithUncertainty(nn.Module):
     self.lhat = lhat
 
 def add_uncertainty(model, params): 
-  base_model_type = None
   last_layer = None
   train_loss_fn = None
   nested_sets_from_output_fn = None
-
-  # Get the trunk
-  if params["model"] == "UNet":
-    base_model_type = UNet
-  elif params["model"] == "WNet":
-    base_model_type = WNet
-  else:
-    raise NotImplementedError
   
   if params["uncertainty_type"] == "quantiles":
     last_layer = QuantileRegressionLayer(model.n_channels_middle, model.n_channels_out, params) 
@@ -72,10 +60,6 @@ def add_uncertainty(model, params):
     last_layer = QuantileRegressionL1Layer(model.n_channels_middle, model.n_channels_out, params) 
     train_loss_fn = quantile_regression_l1_loss_fn    
     nested_sets_from_output_fn = quantile_regression_l1_nested_sets_from_output
-  elif params["uncertainty_type"] == "quantiles_lpips":
-    last_layer = QuantileRegressionLPIPSLayer(model.n_channels_middle, model.n_channels_out, params) 
-    train_loss_fn = last_layer.quantile_regression_lpips_loss_fn    
-    nested_sets_from_output_fn = quantile_regression_lpips_nested_sets_from_output
   elif params["uncertainty_type"] == "gaussian":
     last_layer = GaussianRegressionLayer(model.n_channels_middle, model.n_channels_out, params) 
     train_loss_fn = gaussian_regression_loss_fn    

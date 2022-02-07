@@ -51,7 +51,7 @@ if __name__ == "__main__":
   wandb.run.name = f"{curr_method}, {curr_dataset}, lr{curr_lr}"
   wandb.run.save()
   params = { key: wandb.config[key] for key in wandb.config.keys() }
-  batch_size = wandb.config['batch_size']//4 if wandb.wandb.config['uncertainty_type'] == 'softmax' else wandb.config['batch_size']
+  batch_size = wandb.config['batch_size']
   params['batch_size'] = batch_size
   print("wandb save run.")
 

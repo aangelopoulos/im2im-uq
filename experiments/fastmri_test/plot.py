@@ -40,12 +40,12 @@ formatted as -.4)."""
   major_formatter = ticker.FuncFormatter(my_formatter)
 
   plt.figure(figsize=(12,1.75))
-  sns.set(font_scale=1.3) # 1col scaling
+  sns.set(font_scale=1.2) # 1col scaling
   sns.set_style("white")
   sns.set_palette('pastel')
   # Crop sizes to 99%
   mses = np.array([results['mse'] for results in results_list])
-  methodnames = ['Softmax (S)', 'Gaussian (G)', 'Residual Magnitude (RM)', 'Quantile Regression (QR)'] # For ICML only!
+  #methodnames = ['Residual Magnitude (RM)', 'Gaussian (G)', 'Softmax (S)', 'Quantile Regression (QR)'] # For ICML only!
   #df = pd.DataFrame({'Spearman Rank Correlation' : [results['spearman'] for results in results_list], 'Method': [method.replace(' ','\n') for method in methodnames]})
   #g = sns.scatterplot(data=df, x='Method', y='Spearman Rank Correlation', kind='bar')
   for j in range(len(methodnames)):
@@ -84,11 +84,11 @@ def plot_spearman(methodnames,results_list):
 
 def plot_size_violins(methodnames,results_list):
   plt.figure(figsize=(5,5))
-  #sns.set(font_scale=1.35) # 1col format
-  sns.set(font_scale=2) # 2col format
+  sns.set(font_scale=1.2) # 1col format
+  #sns.set(font_scale=2) # 2col format
   sns.set_style("white")
   sns.set_palette('pastel')
-  methodnames = ['S', 'G', 'RM', 'QR'] # For ICML only!
+  #methodnames = ['RM', 'G', 'S', 'QR'] # For ICML only!
   # Crop sizes to 99%
   for results in results_list:
     results['sizes'] = torch.clamp(results['sizes'], min=0, max=2) + (torch.rand(results['sizes'].shape)-0.5)*0.01
@@ -105,16 +105,16 @@ def plot_size_violins(methodnames,results_list):
 
 def plot_ssr(methodnames,results_list,alpha):
   plt.figure(figsize=(4,4))
-  #sns.set(font_scale=1.35) # 1col format
-  sns.set(font_scale=2) # 2col format
+  sns.set(font_scale=1.2) # 1col format
+  #sns.set(font_scale=2) # 2col format
   sns.set_style("white")
   sns.set_palette(sns.light_palette("salmon"))
-  methodnames = ['S', 'G', 'RM', 'QR'] # For ICML only!
+  #methodnames = ['RM', 'G', 'S', 'QR'] # For ICML only!
   df = pd.DataFrame({'Interval Length': len(results_list)*['Short', 'Short-Medium', 'Medium-Long', 'Long'], 'Size-Stratified Risk' : torch.cat([results['size-stratified risk'] for results in results_list]).tolist(), 'Method': [method.replace(' ','\n') for method in methodnames for i in range(results_list[0]['size-stratified risk'].shape[0])]})
   g = sns.catplot(data=df, kind='bar', x='Method', y='Size-Stratified Risk', hue='Interval Length',legend=False)
   sns.despine(top=True, right=True)
-  #plt.legend(loc='upper right') # 1col format
-  plt.legend(loc='upper right', fontsize=18) # 2col format
+  plt.legend(loc='upper right') # 1col format
+  #plt.legend(loc='upper right', fontsize=18) # 2col format
   plt.xlabel('')
   plt.ylim([None,0.25])
   plt.locator_params(axis="y", nbins=5)
@@ -138,11 +138,11 @@ def plot_risks(methodnames,loss_table_list,n,alpha,delta,num_trials=100):
     with open(fname, 'wb') as f:
       pkl.dump(risks_list,f)
   plt.figure(figsize=(5,5))
-  #sns.set(font_scale=1.35) # 1col format
-  sns.set(font_scale=2) # 2col format
+  sns.set(font_scale=1.2) # 1col format
+  #sns.set(font_scale=2) # 2col format
   sns.set_style("white")
   sns.set_palette('pastel')
-  methodnames = ['S', 'G', 'RM', 'QR'] # For ICML only!
+  #methodnames = ['RM', 'G', 'S', 'QR'] # For ICML only!
   df = pd.DataFrame({'Method' : [method.replace(' ','\n') for method in methodnames for i in range(num_trials)], 'Risk' : torch.cat(risks_list,dim=0).tolist()})
   g = sns.violinplot(data=df, x='Method', y='Risk')
   plt.gca().axhline(y=alpha, color='#888888', linewidth=2, linestyle='dashed')
@@ -176,9 +176,9 @@ def plot_images_uq(results):
     im.save(foldername + "mixed_output.png")
 
 def generate_plots():
-  methodnames = ['Softmax', 'Gaussian','Residual Magnitude','Quantile Regression']
-  results_filenames = ['outputs/raw/results_fastmri_softmax_256_0.001_standard_min-max.pkl','outputs/raw/results_fastmri_gaussian_78_0.001_standard_standard.pkl','outputs/raw/results_fastmri_residual_magnitude_78_0.0001_standard_standard.pkl','outputs/raw/results_fastmri_quantiles_78_0.0001_standard_standard.pkl']
-  loss_tables_filenames = ['outputs/raw/loss_table_fastmri_softmax_256_0.001_standard_min-max.pth','outputs/raw/loss_table_fastmri_gaussian_78_0.001_standard_standard.pth','outputs/raw/loss_table_fastmri_residual_magnitude_78_0.0001_standard_standard.pth','outputs/raw/loss_table_fastmri_quantiles_78_0.0001_standard_standard.pth']
+  methodnames = ['Residual Magnitude','Gaussian','Softmax','Quantile Regression']
+  results_filenames = ['outputs/raw/results_fastmri_residual_magnitude_78_0.0001_standard_standard.pkl','outputs/raw/results_fastmri_gaussian_78_0.001_standard_standard.pkl','outputs/raw/results_fastmri_softmax_256_0.001_standard_min-max.pkl','outputs/raw/results_fastmri_quantiles_78_0.0001_standard_standard.pkl']
+  loss_tables_filenames = ['outputs/raw/loss_table_fastmri_residual_magnitude_78_0.0001_standard_standard.pth','outputs/raw/loss_table_fastmri_gaussian_78_0.001_standard_standard.pth','outputs/raw/loss_table_fastmri_softmax_256_0.001_standard_min-max.pth','outputs/raw/loss_table_fastmri_quantiles_78_0.0001_standard_standard.pth']
   # The max and std of the dataset are needed to rescale the MSE and set size properly for _standard
   dataset_std = 7.01926983310841e-05
   dataset_max = 0.0026554432697594166

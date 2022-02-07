@@ -42,7 +42,6 @@ if __name__ == "__main__":
       mask_info = {'type': 'equispaced', 'center_fraction' : [0.08], 'acceleration' : [4]}
       dataset = FastMRIDataset(path, normalize_input=config["input_normalization"], normalize_output = config["output_normalization"], mask_info=mask_info)
       dataset = normalize_dataset(dataset)
-      pdb.set_trace()
       config.update(dataset.norm_params)
       num_inputs = 1 
     elif config["dataset"] == "temca":
@@ -103,7 +102,7 @@ if __name__ == "__main__":
     wandb.log({"epoch": config['epochs']+1, "Ground truth": examples_ground_truth})
     wandb.log({"epoch": config['epochs']+1, "Lower length": examples_lower_length})
     wandb.log({"epoch": config['epochs']+1, "Upper length": examples_upper_length})
-                                                                                                                                     """
+    """
     # Evaluate the risk and size
     risk, sizes, spearman, stratified_risk, mse = eval_set_metrics(model, val_dataset, config)
     print(f"Risk: {risk}  |  Mean size: {sizes.mean()}  |  Spearman: {spearman}  |  stratified risk: {stratified_risk}  | MSE: {mse}")

@@ -105,18 +105,22 @@ def train_net(net,
     except:
       train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
 
+    print("Train loader!")
+
     val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
     net = net.to(device=device)
     if torch.cuda.device_count() > 1:
       print("Let's use", torch.cuda.device_count(), "GPUs!")
       # dim = 0 [30, xxx] -> [10, ...], [10, ...], [10, ...] on 3 GPUs
-      net = DataParallelPassthrough(net, device_ids=[0,1])
+      net = DataParallelPassthrough(net) # If you only want to train on two GPUs, add device_ids=[0,1]
 
+    print("DataParallel!")
     net = net.to(device=device)
 
     optimizer = optim.Adam(net.parameters(), lr=lr)
 
     # WandB magic
+    print("WandB Magic!")
     if starting_epoch == 0:
       try:
         wandb.watch(net, log_freq = 100)
@@ -124,6 +128,7 @@ def train_net(net,
         wandb.init(config=config)
         wandb.watch(net, log_freq = 100)
 
+    # If you want, you can run an initial validation to see how bad a random net is
     #run_validation(net,
     #               val_loader,
     #               val_dataset,
@@ -132,6 +137,7 @@ def train_net(net,
     #               starting_epoch,
     #               config)
 
+    print("Start Training!")
     for epoch in range(starting_epoch,epochs):
         net = net.to(device)
         net.train()
@@ -184,7 +190,7 @@ def train_net(net,
                       pass
                   checkpoint_fname = checkpoint_dir + f'/CP_epoch{epoch + 1}_' + config['dataset'] + "_" + config['uncertainty_type'] + "_" + str(config['batch_size']) + "_" + str(config['lr']) + "_" + config['input_normalization'] + "_" + config['output_normalization'].replace('.','_') + '.pth'
                   torch.save(net.cpu().module, checkpoint_fname)
-                  #torch.save(net.module, checkpoint_fname)
+                  #torch.save(net.module, checkpoint_fname) #Without wandb, you don't need the .module call
 
                   logging.info(f'Checkpoint {epoch + 1} saved !')
         net.eval()
