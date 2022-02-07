@@ -1,4 +1,4 @@
-name: mmicrocv 
+name: microcv 
 channels:
   - anaconda
   - pytorch
