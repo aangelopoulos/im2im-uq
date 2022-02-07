@@ -52,7 +52,7 @@ The third pre-baked example, ```experiments/bsbcm_test/config.yml```, reiles on 
 You will need to execute
 ```
 conda env create -f environment.yml
-conda activate microcv
+conda activate im2im-uq
 ```
 You will also need to go through the Weights and Biases setup process that initiates when you run your first sweep.
 
