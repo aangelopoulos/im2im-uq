@@ -8,8 +8,6 @@ from core.models.finallayers.gaussian_layer import GaussianRegressionLayer, gaus
 from core.models.finallayers.residual_magnitude_layer import ResidualMagnitudeLayer, residual_magnitude_loss_fn, residual_magnitude_nested_sets_from_output
 from core.models.finallayers.residual_magnitude_l1_layer import ResidualMagnitudeL1Layer, residual_magnitude_l1_loss_fn, residual_magnitude_l1_nested_sets_from_output
 from core.models.finallayers.softmax_layer import SoftmaxLayer, softmax_loss_fn, softmax_nested_sets_from_output
-from core.models.trunks.wnet import WNet
-from core.models.trunks.unet import UNet
 from core.utils import standard_to_minmax
 import json
 
