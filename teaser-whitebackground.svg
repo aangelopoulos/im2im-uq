@@ -29,7 +29,7 @@
      showgrid="false"
      units="in"
      inkscape:zoom="1.8116734"
-     inkscape:cx="176.90827"
+     inkscape:cx="290.6153"
      inkscape:cy="164.48881"
      inkscape:window-width="1920"
      inkscape:window-height="1052"
@@ -231,6 +231,13 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0.48307626,0.04306371)">
+    <rect
+       style="fill:#ffffff;fill-opacity:0.501961;stroke:#ffffff;stroke-width:0.092347;stroke-linecap:round;paint-order:stroke fill markers"
+       id="rect946"
+       width="162.70024"
+       height="75.950325"
+       x="-0.48690277"
+       y="0.099153407" />
     <g
        id="g13786"
        transform="translate(-0.20312601,1.5875)">
