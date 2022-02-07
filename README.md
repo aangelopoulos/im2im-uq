@@ -69,8 +69,14 @@ To add a new dataset, use the following procedure.
 
 ## Adding new models
 In our system, there are two parts to a model---the base architecture, which we call a ```trunk``` (e.g. a U-Net), and the final layer.
-Defining a trunk is as simple as writing a regular PyTorch module and adding it near [Line 87 of ```core/scripts/router.py```](https://github.com/aangelopoulos/im2im-uq/blob/1f7965e169a790548b2b8db69fa005b7ecbfc40d/core/scripts/router.py#L87) (you will also need to import it); see [```core/models/trunks/unet.py```](https://github.com/aangelopoulos/im2im-uq/blob/53a80bd914ee32741d795e451be7449836f8629e/core/models/trunks/unet.py#L10) for an example.
+Defining a trunk is as simple as writing a regular PyTorch ```nn.module``` and adding it near [Line 87 of ```core/scripts/router.py```](https://github.com/aangelopoulos/im2im-uq/blob/1f7965e169a790548b2b8db69fa005b7ecbfc40d/core/scripts/router.py#L87) (you will also need to import it); see [```core/models/trunks/unet.py```](https://github.com/aangelopoulos/im2im-uq/blob/53a80bd914ee32741d795e451be7449836f8629e/core/models/trunks/unet.py#L10) for an example.
 
-* Define the "trunk" of your model (everything but the last layer) in ```core/models/trunks```.
-* Define the final layer of your model in ```core/models/finallayers```.  The final layer must output a lower-endpoint, prediction, and upper-endpoint for each pixel, defining an uncertainty interval for use in ```core/models/add_uncertainty.py```.
-* Define an indexed sequence of nested sets 
+The process for adding a final layer is a bit more involved.
+The final layer is simply a Pytorch ```nn.module```, but it also must come with two functions: a loss function and a nested prediction set function.
+See ```core/models/finallayers/quantile_layer.py``` for an example.
+The steps are:
+* Create a final layer ```nn.module``` object. The final layer should also have a heuristic notion of uncertainty built in, like quantile outputs.
+* Specify the loss function is used to train a network with this final layer.
+* Specify a nested prediction set function that uses output of the final layer to form a prediction set. The prediction set should scale up and down with a free factor ```lam```, which will later be calibrated. The function should have the same prototype as that on [Line 34 of ```core/models/finallayers/quantile_layer.py```](https://github.com/aangelopoulos/im2im-uq/blob/d42ac0aeeb5c01a853de5b64f26818b8a055dfde/core/models/finallayers/quantile_layer.py#L34) for an example.  
+* After creating the new final layer and related functions, add it to ```core/models/add_uncertainty.py``` as in [Line 59](https://github.com/aangelopoulos/im2im-uq/blob/d42ac0aeeb5c01a853de5b64f26818b8a055dfde/core/models/add_uncertainty.py#L55).
+* Edit ```wandb sweep experiments/new_experiment/config.yml``` to include your new final layer, and run the sweep as normal!
