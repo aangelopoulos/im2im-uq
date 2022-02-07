@@ -1,4 +1,4 @@
-name: microcv 
+name: mmicrocv 
 channels:
   - anaconda
   - pytorch
@@ -30,4 +30,3 @@ dependencies:
   - pip:
     - opencv-contrib-python 
     - jsons
-    - lpips
