@@ -10,6 +10,7 @@ The basic idea is
 
 * Define your dataset in ```core/datasets/```.
 * Create a folder for your experiment ```experiments/new_experiment```, along with a file ```experiments/new_experiment/config.yml``` defining the model architecture, hyperparameters, and method of uncertainty quantification. You can use ```experiments/fastmri_test/config.yml``` as a template.
+* Edit ```core/scripts/router.py``` to point to your data directory.
 * From the root folder, run ```wandb sweep experiments/new_experiment/config.yml```, and run the resulting sweep.
 * After the sweep is complete, models will be saved in ```experiments/new_experiment/checkpoints```, the metrics will be printed to the terminal, and outputs will be in ```experiments/new_experiment/output/```.  See ```experiments/fastmri_test/plot.py``` for an example of how to make plots from the raw outputs.
 
@@ -39,12 +40,24 @@ You will also need to go through the Weights and Biases setup process that initi
 
 ## Reproducing the results
 
+### FastMRI dataset
+* Download the [FastMRI](https://fastmri.med.nyu.edu/) dataset to your machine and unzip it. We worked with the ```knee_singlecoil_train``` dataset.
+* Edit [Line 71 of ```core/scripts/router```](https://github.com/aangelopoulos/im2im-uq/blob/9e1b71378636e842b0a9e8c7b87635762422b86c/core/scripts/router.py#L71) to point to the your local dataset.
+* From the root folder, run ```wandb sweep experiments/fastmri_test/config.yml```
+* After the run is complete, run ```cd experiments/fastmri_test/plot.py``` to plot the results.
+
+### TEMCA2 dataset
+* Download the [FastMRI](https://fastmri.med.nyu.edu/) dataset to your machine and unzip it. We worked with the ```knee_singlecoil_train``` dataset.
+* Edit [Line 71 of ```core/scripts/router```](https://github.com/aangelopoulos/im2im-uq/blob/9e1b71378636e842b0a9e8c7b87635762422b86c/core/scripts/router.py#L71) to point to the your local dataset.
+* From the root folder, run ```wandb sweep experiments/fastmri_test/config.yml```
+* After the run is complete, run ```cd experiments/fastmri_test/plot.py``` to plot the results.
+
 ## Adding a new experiment
 If you want to extend this code to 
 
 ## Adding new datasets
 To add a new dataset, use the following procedure.
-* 
+* Download the dataset to 
 
 * Define the "trunk" of your model (everything but the last layer) in ```core/models/trunks```
 * Define the final layer of your model in ```core/models/finallayers```.  The final layer must output a lower-endpoint, prediction, and upper-endpoint for each pixel, defining an uncertainty interval for use in ```core/models/add_uncertainty.py```.
