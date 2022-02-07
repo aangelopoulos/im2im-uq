@@ -50,18 +50,9 @@ class ModelWithUncertainty(nn.Module):
     self.lhat = lhat
 
 def add_uncertainty(model, params): 
-  base_model_type = None
   last_layer = None
   train_loss_fn = None
   nested_sets_from_output_fn = None
-
-  # Get the trunk
-  if params["model"] == "UNet":
-    base_model_type = UNet
-  elif params["model"] == "WNet":
-    base_model_type = WNet
-  else:
-    raise NotImplementedError
   
   if params["uncertainty_type"] == "quantiles":
     last_layer = QuantileRegressionLayer(model.n_channels_middle, model.n_channels_out, params) 
