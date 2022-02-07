@@ -47,17 +47,25 @@ You will also need to go through the Weights and Biases setup process that initi
 * After the run is complete, run ```cd experiments/fastmri_test/plot.py``` to plot the results.
 
 ### TEMCA2 dataset
-* Download the [FastMRI](https://fastmri.med.nyu.edu/) dataset to your machine and unzip it. We worked with the ```knee_singlecoil_train``` dataset.
-* Edit [Line 71 of ```core/scripts/router```](https://github.com/aangelopoulos/im2im-uq/blob/9e1b71378636e842b0a9e8c7b87635762422b86c/core/scripts/router.py#L71) to point to the your local dataset.
-* From the root folder, run ```wandb sweep experiments/fastmri_test/config.yml```
-* After the run is complete, run ```cd experiments/fastmri_test/plot.py``` to plot the results.
+* Download the [TEMCA2](https://temca2data.org/download.html) dataset to your machine and unzip it. We worked with sections 3501 through 3839.
+* Edit [Line 78 of ```core/scripts/router```](https://github.com/aangelopoulos/im2im-uq/blob/9e1b71378636e842b0a9e8c7b87635762422b86c/core/scripts/router.py#L78) to point to the your local dataset.
+* From the root folder, run ```wandb sweep experiments/temca_test/config.yml```
+* After the run is complete, run ```cd experiments/temca_test/plot.py``` to plot the results.
 
 ## Adding a new experiment
-If you want to extend this code to 
+If you want to extend this code to a new experiment, you will need to write some code compatible with our infrastructure. If adding a new dataset, you will need to write a valid PyTorch dataset object; you need to add a new model architecture, you will need to specify it; and so on.
+Usually, you will want to start by creating a folder ```experiments/new_experiment``` along with a config file ```experiments/new_experiment/config.yml```. 
+The easiest way is to start from an existing config, like ```experiments/fastmri_test/config.yml```.
 
 ## Adding new datasets
 To add a new dataset, use the following procedure.
-* Download the dataset to 
+* Download the dataset to your machine.
+* In ```core/datasets```, make a new folder for your dataset ```core/datasets/new_dataset```.
+* Make a valid [PyTorch ```Dataset```](https://pytorch.org/tutorials/beginner/data_loading_tutorial.html) class for your new dataset. The most critical part is writing a ```__get_item__``` method that returns an image-image pair in CxHxW order; see ```core/datasets/bsbcm/BSBCMDataset.py``` for a simple example.
+* Make a file ```core/datasets/new_dataset/__init__.py``` and export your dataset by adding the line ```from .NewDataset.py import NewDatasetClass``` (substituting in your filename and classname appropriately).
+* Edit ```core/scripts/router.py``` to load your new dataset, near [Line 64](https://github.com/aangelopoulos/im2im-uq/blob/9e1b71378636e842b0a9e8c7b87635762422b86c/core/scripts/router.py#L64), following the pattern therein.
+* Populate your new config file ```experiments/new_experiment/config.yml``` with the correct directories and experiment name.
+* Execute ```wandb sweep experiments/new_experiment/config.yml``` and proceed as normal!
 
 * Define the "trunk" of your model (everything but the last layer) in ```core/models/trunks```
 * Define the final layer of your model in ```core/models/finallayers```.  The final layer must output a lower-endpoint, prediction, and upper-endpoint for each pixel, defining an uncertainty interval for use in ```core/models/add_uncertainty.py```.
