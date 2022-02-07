@@ -1,4 +1,4 @@
-name: microcv 
+name: im2im 
 channels:
   - anaconda
   - pytorch
