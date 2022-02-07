@@ -5,7 +5,7 @@ A platform for image-to-image regression with rigorous, distribution-free uncert
   <img src="./teaser-whitebackground.png" width="70%" />
   <br/>
   <div align="center" width="65%">
-    <figcaption width="70%"><b>An algorithmic MRI reconstruction with uncertainty.</bf> A rapidly acquired but undersampled MR image of a knee (A) is fed into a model that predicts a sharp reconstruction (B) along with a calibrated notion of uncertainty (C). In (C), red means high uncertainty and blue means low uncertainty. Wherever the reconstruction contains hallucinations, the uncertainty is high; see the hallucination in the image patch (E), which has high uncertainty in (F), and does not exist in the ground truth (G).</figcaption>
+    <figcaption display="table-caption" width="70%"><b>An algorithmic MRI reconstruction with uncertainty.</bf> A rapidly acquired but undersampled MR image of a knee (A) is fed into a model that predicts a sharp reconstruction (B) along with a calibrated notion of uncertainty (C). In (C), red means high uncertainty and blue means low uncertainty. Wherever the reconstruction contains hallucinations, the uncertainty is high; see the hallucination in the image patch (E), which has high uncertainty in (F), and does not exist in the ground truth (G).</figcaption>
   </div>
 </div>
 
