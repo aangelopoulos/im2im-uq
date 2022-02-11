@@ -1,7 +1,7 @@
 # im2im-uq
 
 <p align="center">
-    <a style="text-decoration:none !important;" href="https://arxiv.org/abs/????.?????" alt="arXiv"> <img src="https://img.shields.io/badge/paper-arXiv-red" /> </a>
+    <a style="text-decoration:none !important;" href="https://arxiv.org/abs/2202.05265" alt="arXiv"> <img src="https://img.shields.io/badge/paper-arXiv-red" /> </a>
     <a style="text-decoration:none !important;" href="https://people.eecs.berkeley.edu/%7Eangelopoulos/" alt="website"> <img src="https://img.shields.io/badge/website-Berkeley-yellow" /> </a>
     <a style="text-decoration:none !important;" href="https://docs.conda.io/en/latest/miniconda.html" alt="package management"> <img src="https://img.shields.io/badge/conda-env-green" /> </a>
     <a style="text-decoration:none !important;" href="https://opensource.org/licenses/MIT" alt="License"> <img src="https://img.shields.io/badge/license-MIT-blue.svg" /> </a>
@@ -38,12 +38,12 @@ There are two pre-baked examples that you can run on your own after downloading 
 The third pre-baked example, ```experiments/bsbcm_test/config.yml```, reiles on data collected at Berkeley that has not yet been publicly released (but will be soon).
 
 ## Paper 
-[Image-to-Image Regression with Distribution-Free Uncertainty Quantification and Applications in Imaging](https://arxiv.org/abs/????.?????)
+[Image-to-Image Regression with Distribution-Free Uncertainty Quantification and Applications in Imaging](https://arxiv.org/abs/2202.05265)
 ```
 @article{angelopoulos2022image,
   title={Image-to-Image Regression with Distribution-Free Uncertainty Quantification and Applications in Imaging},
   author={Angelopoulos, Anastasios N and Kohli, Amit P and Bates, Stephen and Jordan, Michael I and Malik, Jitendra and Alshaabi, Thayer and Upadhyayula, Srigokul and Romano, Yaniv},
-  journal={arXiv preprint arXiv:????.?????},
+  journal={arXiv preprint arXiv:2202.05265},
   year={2022}
 }
 ```
