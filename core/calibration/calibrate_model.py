@@ -63,7 +63,7 @@ def evaluate_from_loss_table(loss_table,n,alpha,delta):
     calib_table, val_table = loss_table[:n], loss_table[n:]
     Rhats = calib_table.mean(dim=0)
     RhatPlus = torch.tensor([HB_mu_plus(Rhat, n, delta) for Rhat in Rhats])
-    idx_lambda = (RhatPlus <= delta).nonzero()[0]
+    idx_lambda = (RhatPlus <= alpha).nonzero()[0]
     return val_table[:,idx_lambda].mean()
   
 def fraction_missed_loss(pset,label):
