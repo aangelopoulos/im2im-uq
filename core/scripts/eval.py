@@ -152,9 +152,9 @@ def eval_set_metrics(model, dataset, config):
     out_dataset = TensorDataset(outputs,labels)
 
     print("GET RCPS METRICS FROM OUTPUTS")
-    losses, sizes, spearman, stratified_risks, mse = get_rcps_metrics_from_outputs(model, out_dataset, rcps_loss_fn, device)
+    losses, sizes, spearman, stratified_risks, mse, spatial_miscoverage = get_rcps_metrics_from_outputs(model, out_dataset, rcps_loss_fn, device)
     print("DONE!")
-    return losses.mean(), sizes, spearman, stratified_risks, mse
+    return losses.mean(), sizes, spearman, stratified_risks, mse, spatial_miscoverage
 
 def eval_net(net, loader, device):
     with torch.no_grad():

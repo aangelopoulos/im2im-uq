@@ -7,6 +7,7 @@ from core.models.finallayers.quantile_l1_layer import QuantileRegressionL1Layer,
 from core.models.finallayers.gaussian_layer import GaussianRegressionLayer, gaussian_regression_loss_fn, gaussian_regression_nested_sets_from_output
 from core.models.finallayers.residual_magnitude_layer import ResidualMagnitudeLayer, residual_magnitude_loss_fn, residual_magnitude_nested_sets_from_output
 from core.models.finallayers.residual_magnitude_l1_layer import ResidualMagnitudeL1Layer, residual_magnitude_l1_loss_fn, residual_magnitude_l1_nested_sets_from_output
+from core.models.finallayers.inn_layer import INNLayer, inn_loss_fn, inn_nested_sets_from_output
 from core.models.finallayers.softmax_layer import SoftmaxLayer, softmax_loss_fn, softmax_nested_sets_from_output
 from core.utils import standard_to_minmax
 import json
@@ -76,6 +77,10 @@ def add_uncertainty(model, params):
     last_layer = SoftmaxLayer(model.n_channels_middle, model.n_channels_out, params) 
     train_loss_fn = softmax_loss_fn
     nested_sets_from_output_fn = softmax_nested_sets_from_output
+  elif params["uncertainty_type"] == "inn":
+    last_layer = INNLayer(model.n_channels_middle, model.n_channels_out, params) 
+    train_loss_fn = inn_loss_fn
+    nested_sets_from_output_fn = inn_nested_sets_from_output
   else:
     raise NotImplementedError
 

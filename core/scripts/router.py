@@ -151,9 +151,9 @@ if __name__ == "__main__":
     wandb.log({"epoch": wandb.config['epochs']+1, "Ground truth": examples_ground_truth})
     wandb.log({"epoch": wandb.config['epochs']+1, "Lower length": examples_ll})
     wandb.log({"epoch": wandb.config['epochs']+1, "Upper length": examples_ul})
-    # Get the risk and set size
-    print("GET THE RISK AND SET SIZE")
-    risk, sizes, spearman, stratified_risk, mse = eval_set_metrics(model, val_dataset, params)
+    # Get the risk and other metrics 
+    print("GET THE METRICS INCLUDING SPATIAL MISCOVERAGE")
+    risk, sizes, spearman, stratified_risk, mse, spatial_miscoverage = eval_set_metrics(model, val_dataset, params)
     print("DONE")
 
 
@@ -161,8 +161,8 @@ if __name__ == "__main__":
     #table = wandb.Table(data=data, columns = ["Difficulty", "Empirical Risk"])
     #wandb.log({"Size-Stratified Risk Barplot" : wandb.plot.bar(table, "Difficulty","Empirical Risk", title="Size-Stratified Risk") })
 
-    print(f"Risk: {risk}  |  Mean size: {sizes.mean()}  |  Spearman: {spearman}  |  Size-stratified risk: {stratified_risk} | MSE: {mse}")
-    wandb.log({"epoch": wandb.config['epochs']+1, "risk": risk, "mean_size":sizes.mean(), "Spearman":spearman, "Size-Stratified Risk":stratified_risk, "mse":mse})
+    print(f"Risk: {risk}  |  Mean size: {sizes.mean()}  |  Spearman: {spearman}  |  Size-stratified risk: {stratified_risk} | MSE: {mse} | Spatial miscoverage: (mu, sigma, min, max) = ({spatial_miscoverage.mean()}, {spatial_miscoverage.std()}, {spatial_miscoverage.min()}, {spatial_miscoverage.max()})")
+    wandb.log({"epoch": wandb.config['epochs']+1, "risk": risk, "mean_size":sizes.mean(), "Spearman":spearman, "Size-Stratified Risk":stratified_risk, "mse":mse, "spatial_miscoverage" : spatial_miscoverage})
     
     # Save outputs for later plotting
     print("Saving outputs for plotting")
@@ -172,7 +172,7 @@ if __name__ == "__main__":
             print('Created output directory')
         except OSError:
             pass
-        results = { "risk": risk, "sizes": sizes, "spearman": spearman, "size-stratified risk": stratified_risk, "mse": mse }
+        results = { "risk": risk, "sizes": sizes, "spearman": spearman, "size-stratified risk": stratified_risk, "mse": mse, "spatial_miscoverage": spatial_miscoverage }
         results.update(raw_images_dict)
         with open(results_fname, 'wb') as handle:
           pkl.dump(results, handle, protocol=pkl.HIGHEST_PROTOCOL)

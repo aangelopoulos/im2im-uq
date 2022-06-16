@@ -32,6 +32,7 @@ def get_rcps_metrics_from_outputs(model, out_dataset, rcps_loss_fn, device):
   losses = []
   sizes = []
   residuals = []
+  spatial_miscoverages = []
   dataloader = DataLoader(out_dataset, batch_size=64, shuffle=False, num_workers=0, pin_memory=True) 
   model = model.to(device)
   for batch in dataloader:
@@ -43,6 +44,7 @@ def get_rcps_metrics_from_outputs(model, out_dataset, rcps_loss_fn, device):
     size_random_idxs = np.random.choice(sets_full.shape[1],size=sets_full.shape[0])
     size_samples = sets_full[range(sets_full.shape[0]),size_random_idxs]
     residuals = residuals + [(labels - sets[1]).abs().flatten(start_dim=1)[range(sets_full.shape[0]),size_random_idxs]]
+    spatial_miscoverages = spatial_miscoverages + [(labels > sets[2]).float() + (labels < sets[0]).float()]
     sizes = sizes + [torch.tensor(size_samples),]
   losses = torch.cat(losses,dim=0)
   sizes = torch.cat(sizes,dim=0)
@@ -50,11 +52,12 @@ def get_rcps_metrics_from_outputs(model, out_dataset, rcps_loss_fn, device):
   residuals = torch.cat(residuals,dim=0).detach().cpu().numpy() 
   spearman = spearmanr(residuals, sizes)[0]
   mse = (residuals*residuals).mean().item()
+  spatial_miscoverage = torch.cat(spatial_miscoverages, dim=0).detach().cpu().numpy().mean(axis=0).mean(axis=0)
   size_bins = torch.tensor([0, torch.quantile(sizes, 0.25), torch.quantile(sizes, 0.5), torch.quantile(sizes, 0.75)])
   buckets = torch.bucketize(sizes, size_bins)-1
   stratified_risks = torch.tensor([losses[buckets == bucket].mean() for bucket in range(size_bins.shape[0])])
   print(f"Model output shape: {x.shape}, label shape: {labels.shape}, Sets shape: {sets[2].shape}, sizes: {sizes}, size_bins:{size_bins}, stratified_risks: {stratified_risks}, mse: {mse}")
-  return losses, sizes, spearman, stratified_risks, mse
+  return losses, sizes, spearman, stratified_risks, mse, spatial_miscoverage
 
 def evaluate_from_loss_table(loss_table,n,alpha,delta):
   with torch.no_grad():
@@ -63,7 +66,11 @@ def evaluate_from_loss_table(loss_table,n,alpha,delta):
     calib_table, val_table = loss_table[:n], loss_table[n:]
     Rhats = calib_table.mean(dim=0)
     RhatPlus = torch.tensor([HB_mu_plus(Rhat, n, delta) for Rhat in Rhats])
-    idx_lambda = (RhatPlus <= delta).nonzero()[0]
+    try:
+        idx_lambda = (RhatPlus <= delta).nonzero()[0]
+    except:
+        print("No rejections made!")
+        idx_lambda = 0
     return val_table[:,idx_lambda].mean()
   
 def fraction_missed_loss(pset,label):

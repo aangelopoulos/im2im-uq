@@ -20,8 +20,10 @@ parameters:
   model:
     value: "UNet"
   uncertainty_type: 
-    values: ['softmax','gaussian','residual_magnitude','quantiles']
+    values: ['softmax',]
   alpha: 
+    value: 0.1
+  beta:
     value: 0.1
   delta: 
     value: 0.1
@@ -44,7 +46,7 @@ parameters:
   batch_size:
     value: 64 
   lr:
-    values: [0.0001,]
+    values: [0.001, 0.0001,]
   load_from_checkpoint: 
     value: True
   checkpoint_dir:
