@@ -20,7 +20,7 @@ parameters:
   model:
     value: "UNet"
   uncertainty_type: 
-    values: ["softmax","gaussian","residual_magnitude","quantiles"]
+    values: ["gaussian","residual_magnitude","quantiles"]
   alpha: 
     value: 0.1
   delta: 
@@ -42,7 +42,7 @@ parameters:
   epochs:
     value: 20
   batch_size:
-    value: 64 
+    value: 78 
   lr:
     values: [0.0001,0.001]
   load_from_checkpoint: 

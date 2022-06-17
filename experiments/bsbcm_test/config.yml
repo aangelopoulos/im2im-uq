@@ -20,7 +20,7 @@ parameters:
   model:
     value: "UNet"
   uncertainty_type: 
-    values: ['softmax',]
+    values: ['gaussian',]
   alpha: 
     value: 0.1
   beta:
