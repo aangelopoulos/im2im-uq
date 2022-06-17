@@ -53,7 +53,7 @@ class FastMRIDataset(Dataset):
         self.norm_params = None
 
         print('loading dataset from ' + path + '...')
-        self.challenge = path.split('/')[-2].split('_')[0]
+        self.challenge = 'singlecoil' 
         self.recons_key = (
             "reconstruction_esc" if self.challenge == "singlecoil" else "reconstruction_rss"
         )

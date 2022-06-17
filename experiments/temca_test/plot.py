@@ -135,10 +135,26 @@ def plot_images_uq(results):
     im = Image.fromarray((255*mixed_output.numpy()).astype('uint8')).convert('RGB')
     im.save(foldername + "mixed_output.png")
 
+def plot_spatial_miscoverage(methodnames, results_list):
+  plt.figure(figsize=(5,5))
+  #sns.set(font_scale=1.2) # 1col scaling
+  sns.set(font_scale=2) # 2col scaling
+  sns.set_style("white")
+  sns.set_palette('pastel')
+  uq_cmap = cm.get_cmap('coolwarm',50)
+  foldername = 'outputs/spatial_miscoverage/'
+  os.makedirs(foldername,exist_ok=True)
+  for i in range(len(results_list)): 
+    spatial_miscoverage = results_list[i]['spatial_miscoverage']
+    im = Image.fromarray((255*uq_cmap(spatial_miscoverage)).astype('uint8')).convert('RGB')
+    im.save(foldername + f"fastMRI_spatial_miscoverage_{methodnames[i]}.png")
+
 def generate_plots():
   methodnames = ['Quantile Regression']
   results_filenames = ['outputs/raw/results_temca_quantiles_16_0.001_standard_standard.pkl',]
   loss_tables_filenames = ['outputs/raw/loss_table_temca_quantiles_16_0.001_standard_standard.pth',]
+  alpha = 0.1
+  delta = 0.1
   # Load results
   results_list = []
   for filename in results_filenames:
@@ -147,10 +163,10 @@ def generate_plots():
   loss_tables_list = []
   for filename in loss_tables_filenames:
     loss_tables_list = loss_tables_list + [torch.load(filename),]
-  # Plot risks
-  alpha = 0.1
-  delta = 0.1
   n = loss_tables_list[0].shape[0]//2
+  # Plot spatial miscoverage
+  plot_spatial_miscoverage(methodnames, results_list)
+  # Plot risks
   plot_risks(methodnames,loss_tables_list,n,alpha,delta)
   # Plot spearman correlations
   plot_spearman(methodnames,results_list)
