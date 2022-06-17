@@ -175,10 +175,27 @@ def plot_images_uq(results):
     im = Image.fromarray((255*mixed_output.numpy()).astype('uint8')).convert('RGB')
     im.save(foldername + "mixed_output.png")
 
+def plot_spatial_miscoverage(methodnames, results_list):
+  plt.figure(figsize=(5,5))
+  #sns.set(font_scale=1.2) # 1col scaling
+  sns.set(font_scale=2) # 2col scaling
+  sns.set_style("white")
+  sns.set_palette('pastel')
+  uq_cmap = cm.get_cmap('coolwarm',50)
+  foldername = 'outputs/spatial_miscoverage/'
+  os.makedirs(foldername,exist_ok=True)
+  for i in range(len(results_list)): 
+    spatial_miscoverage = results_list[i]['spatial_miscoverage']
+    im = Image.fromarray((255*uq_cmap(spatial_miscoverage)).astype('uint8')).convert('RGB')
+    im.save(foldername + f"fastMRI_spatial_miscoverage_{methodnames[i]}.png")
+
 def generate_plots():
-  methodnames = ['Residual Magnitude','Gaussian','Softmax','Quantile Regression']
-  results_filenames = ['outputs/raw/results_fastmri_residual_magnitude_78_0.0001_standard_standard.pkl','outputs/raw/results_fastmri_gaussian_78_0.001_standard_standard.pkl','outputs/raw/results_fastmri_softmax_256_0.001_standard_min-max.pkl','outputs/raw/results_fastmri_quantiles_78_0.0001_standard_standard.pkl']
-  loss_tables_filenames = ['outputs/raw/loss_table_fastmri_residual_magnitude_78_0.0001_standard_standard.pth','outputs/raw/loss_table_fastmri_gaussian_78_0.001_standard_standard.pth','outputs/raw/loss_table_fastmri_softmax_256_0.001_standard_min-max.pth','outputs/raw/loss_table_fastmri_quantiles_78_0.0001_standard_standard.pth']
+  methodnames = ['Residual Magnitude', 'Gaussian', 'Softmax', 'Quantile Regression']
+  results_filenames = ['outputs/raw/results_fastmri_residual_magnitude_78_0.0001_standard_standard.pkl', 'outputs/raw/results_fastmri_gaussian_78_0.0001_standard_standard.pkl', 'outputs/raw/results_fastmri_softmax_64_0.001_standard_min-max.pkl', 'outputs/raw/results_fastmri_quantiles_78_0.0001_standard_standard.pkl']
+  loss_tables_filenames = ['outputs/raw/loss_table_fastmri_residual_magnitude_78_0.0001_standard_standard.pth', 'outputs/raw/loss_table_fastmri_gaussian_78_0.0001_standard_standard.pth', 'outputs/raw/loss_table_fastmri_softmax_64_0.001_standard_min-max.pth', 'outputs/raw/loss_table_fastmri_quantiles_78_0.0001_standard_standard.pth']
+  #methodnames = ['Residual Magnitude','Gaussian','Softmax','Quantile Regression']
+  #results_filenames = ['outputs/raw/results_fastmri_residual_magnitude_78_0.0001_standard_standard.pkl','outputs/raw/results_fastmri_gaussian_78_0.001_standard_standard.pkl','outputs/raw/results_fastmri_softmax_256_0.001_standard_min-max.pkl','outputs/raw/results_fastmri_quantiles_78_0.0001_standard_standard.pkl']
+  #loss_tables_filenames = ['outputs/raw/loss_table_fastmri_residual_magnitude_78_0.0001_standard_standard.pth','outputs/raw/loss_table_fastmri_gaussian_78_0.001_standard_standard.pth','outputs/raw/loss_table_fastmri_softmax_256_0.001_standard_min-max.pth','outputs/raw/loss_table_fastmri_quantiles_78_0.0001_standard_standard.pth']
   # The max and std of the dataset are needed to rescale the MSE and set size properly for _standard
   dataset_std = 7.01926983310841e-05
   dataset_max = 0.0026554432697594166
@@ -194,10 +211,11 @@ def generate_plots():
   loss_tables_list = []
   for filename in loss_tables_filenames:
     loss_tables_list = loss_tables_list + [torch.load(filename),]
-  # Plot risks
   alpha = 0.1
   delta = 0.1
   n = loss_tables_list[0].shape[0]//2
+  # Plot spatial miscoverage
+  plot_spatial_miscoverage(methodnames, results_list)
   # Plot mse
   plot_mse(methodnames,results_list)
   # Plot risks
