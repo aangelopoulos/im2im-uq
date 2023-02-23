@@ -8,7 +8,7 @@ def h1(y, mu):
 
 ### Log tail inequalities of mean
 def hoeffding_plus(mu, x, n):
-    return -n * h1(np.maximum(mu,x),mu)
+    return -n * h1(np.minimum(mu,x),mu)
 
 def bentkus_plus(mu, x, n):
     return np.log(max(binom.cdf(np.floor(n*x),n,mu),1e-10))+1
@@ -16,7 +16,7 @@ def bentkus_plus(mu, x, n):
 ### UCB of mean via Hoeffding-Bentkus hybridization
 def HB_mu_plus(muhat, n, delta, maxiters=1000):
     def _tailprob(mu):
-        hoeffding_mu = hoeffding_plus(mu, muhat, n) 
+        hoeffding_mu = hoeffding_plus(mu, muhat, n)
         bentkus_mu = bentkus_plus(mu, muhat, n)
         return min(hoeffding_mu, bentkus_mu) - np.log(delta)
     if _tailprob(1-1e-10) > 0:
@@ -25,13 +25,13 @@ def HB_mu_plus(muhat, n, delta, maxiters=1000):
         try:
           return brentq(_tailprob, muhat, 1-1e-10, maxiter=maxiters)
         except:
-          print(f"BRENTQ RUNTIME ERROR at muhat={muhat}") 
+          print(f"BRENTQ RUNTIME ERROR at muhat={muhat}")
           return 1.0
 
 def WSR_mu_plus(x, delta, maxiters=1000): # this one is different.
     n = x.shape[0]
     muhat = (np.cumsum(x) + 0.5) / (1 + np.array(range(1,n+1)))
-    sigma2hat = (np.cumsum((x - muhat)**2) + 0.25) / (1 + np.array(range(1,n+1))) 
+    sigma2hat = (np.cumsum((x - muhat)**2) + 0.25) / (1 + np.array(range(1,n+1)))
     sigma2hat[1:] = sigma2hat[:-1]
     sigma2hat[0] = 0.25
     nu = np.minimum(np.sqrt(2 * np.log( 1 / delta ) / n / sigma2hat), 1)
